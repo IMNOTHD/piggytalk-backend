@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package api.snowflake.v1;
+
+import "google/api/annotations.proto";
+
+option go_package = "snowflake/api/snowflake/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.snowflake.v1";
+
+service Snowflake {
+	// generate snowflake id
+	rpc CreateSnowflake (CreateSnowflakeRequest) returns (CreateSnowflakeReply) {
+		option (google.api.http) = {
+			get: "/snowflake"
+		};
+	}
+}
+
+message CreateSnowflakeRequest {
+	int64 dataCenterId = 1;
+	int64 workerId = 2;
+}
+message CreateSnowflakeReply {
+	int64 snowFlakeId = 1;
+}

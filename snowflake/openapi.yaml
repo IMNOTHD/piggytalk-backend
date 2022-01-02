@@ -1,0 +1,35 @@
+# Generated with protoc-gen-openapi
+# https://github.com/google/gnostic/tree/master/apps/protoc-gen-openapi
+
+openapi: 3.0.3
+info:
+    title: Snowflake
+    version: 0.0.1
+paths:
+    /snowflake:
+        get:
+            summary: generate snowflake id
+            operationId: Snowflake_CreateSnowflake
+            parameters:
+                - name: dataCenterId
+                  in: query
+                  schema:
+                    type: string
+                - name: workerId
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CreateSnowflakeReply'
+components:
+    schemas:
+        CreateSnowflakeReply:
+            properties:
+                snowFlakeId:
+                    type: integer
+                    format: int64

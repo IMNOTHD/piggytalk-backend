@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package api.test;
+
+import "google/api/annotations.proto";
+
+option go_package = "gateway/api/test;test";
+option java_multiple_files = true;
+option java_package = "api.test";
+
+service Test {
+	rpc TestSnowflake (TestSnowflakeRequest) returns (TestSnowflakeReply) {
+		option (google.api.http) = {
+			get: "/snowflake"
+		};
+	}
+}
+
+message TestSnowflakeRequest {
+	int64 dataCenterId = 1;
+	int64 workerId = 2;
+}
+message TestSnowflakeReply {
+	int64 snowFlakeId = 1;
+}
