@@ -20,14 +20,17 @@ import (
 
 // go build -ldflags "-X main.Version=x.y.z"
 var (
-	// Name is the name of the compiled software.
-	Name string
 	// Version is the version of the compiled software.
 	Version string
 	// flagconf is the config flag.
 	flagconf string
 
 	id, _ = os.Hostname()
+)
+
+const (
+	// Name is the name of the compiled software.
+	Name = "piggytalk-snowflake"
 )
 
 func init() {
@@ -42,8 +45,6 @@ func newApp(logger log.Logger, hs *http.Server, gs *grpc.Server) *kratos.App {
 	if err != nil {
 		panic(err)
 	}
-
-	Name = "piggytalk-snowflake"
 
 	return kratos.New(
 		kratos.ID(id),

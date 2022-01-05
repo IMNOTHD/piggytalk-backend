@@ -1,0 +1,51 @@
+version: '3'
+
+services:
+  fluentd:
+    container_name: EFK-fluentd
+    environment:
+      - TZ=Asia/Shanghai
+    build:
+      context: .
+      dockerfile: Dockerfile
+    networks:
+      - piggytalk-backend-bridge
+      - piggytalk-backend-logging-bridge
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+  elasticsearch:
+    image: elasticsearch:7.16.2
+    container_name: EFK-elasticsearch
+    environment:
+      - "ES_JAVA_OPTS=-Xms64m -Xmx1024m"
+      - discovery.type=single-node
+      - TZ=Asia/Shanghai
+    expose:
+      - 9200
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - piggytalk-backend-logging-bridge
+
+  kibana:
+    image: kibana:7.16.2
+    container_name: EFK-kibana
+    environment:
+      - TZ=Asia/Shanghai
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - xpack.security.enabled=false
+    ports:
+      - "5601:5601"
+    networks:
+      - piggytalk-backend-logging-bridge
+    depends_on:
+      - elasticsearch
+
+
+networks:
+  piggytalk-backend-bridge:
+    external:
+      name: piggytalk-backend-bridge
+  piggytalk-backend-logging-bridge:
