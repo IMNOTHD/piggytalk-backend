@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 
 	"gateway/internal/conf"
@@ -13,6 +14,7 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
+	"github.com/hashicorp/consul/api"
 )
 
 // go build -ldflags "-X main.Version=x.y.z"
@@ -46,14 +48,13 @@ func newApp(logger log.Logger, hs *http.Server, gs *grpc.Server) *kratos.App {
 }
 
 func main() {
-	flag.Parse()
-
-	addr := ""
-	logger, err := fluent.NewLogger(addr, fluent.WithTagPrefix("piggytalk-backend"))
+	fluentdService := ServiceDiscover("fluentd1")
+	logger, err := fluent.NewLogger(fmt.Sprintf("tcp://%s:%d", "127.0.0.1", fluentdService.Port), fluent.WithTagPrefix("piggytalk-backend-gateway"))
 	if err != nil {
 		panic(err)
 	}
 
+	flag.Parse()
 	c := config.New(
 		config.WithSource(
 			file.NewSource(flagconf),
@@ -80,4 +81,26 @@ func main() {
 	if err := app.Run(); err != nil {
 		panic(err)
 	}
+}
+
+// ServiceDiscover 服务发现，获取指定id的服务
+func ServiceDiscover(serviceID string) *api.AgentService {
+
+	// 创建Consul客户端连接
+	config := api.DefaultConfig()
+	config.Address = "127.0.0.1:8500"
+	client, err := api.NewClient(config)
+	if err != nil {
+		panic(err)
+	}
+
+	// 获取指定service
+	service, _, err := client.Agent().Service(serviceID, nil)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(service.Address)
+	fmt.Println(service.Port)
+
+	return service
 }

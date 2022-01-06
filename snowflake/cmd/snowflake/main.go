@@ -2,15 +2,16 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 
 	"snowflake/internal/conf"
 
+	"github.com/go-kratos/kratos/contrib/log/fluent/v2"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/file"
 	"github.com/go-kratos/kratos/v2/log"
-	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
 
@@ -61,16 +62,13 @@ func newApp(logger log.Logger, hs *http.Server, gs *grpc.Server) *kratos.App {
 }
 
 func main() {
+	fluentdService := ServiceDiscover("fluentd1")
+	logger, err := fluent.NewLogger(fmt.Sprintf("tcp://%s:%d", "127.0.0.1", fluentdService.Port), fluent.WithTagPrefix("piggytalk-backend-snowflake"))
+	if err != nil {
+		panic(err)
+	}
+
 	flag.Parse()
-	logger := log.With(log.NewStdLogger(os.Stdout),
-		"ts", log.DefaultTimestamp,
-		"caller", log.DefaultCaller,
-		"service.id", id,
-		"service.name", Name,
-		"service.version", Version,
-		"trace_id", tracing.TraceID(),
-		"span_id", tracing.SpanID(),
-	)
 	c := config.New(
 		config.WithSource(
 			file.NewSource(flagconf),
@@ -97,4 +95,26 @@ func main() {
 	if err := app.Run(); err != nil {
 		panic(err)
 	}
+}
+
+// ServiceDiscover 服务发现，获取指定id的服务
+func ServiceDiscover(serviceID string) *api.AgentService {
+
+	// 创建Consul客户端连接
+	config := api.DefaultConfig()
+	config.Address = "127.0.0.1:8500"
+	client, err := api.NewClient(config)
+	if err != nil {
+		panic(err)
+	}
+
+	// 获取指定service
+	service, _, err := client.Agent().Service(serviceID, nil)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(service.Address)
+	fmt.Println(service.Port)
+
+	return service
 }

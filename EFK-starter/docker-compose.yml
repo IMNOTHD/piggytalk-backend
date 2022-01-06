@@ -2,7 +2,7 @@ version: '3'
 
 services:
   fluentd:
-    container_name: EFK-fluentd
+    container_name: fluentd
     environment:
       - TZ=Asia/Shanghai
     build:
@@ -16,11 +16,13 @@ services:
       - "24224:24224/udp"
   elasticsearch:
     image: elasticsearch:7.16.2
-    container_name: EFK-elasticsearch
+    container_name: elasticsearch
     environment:
       - "ES_JAVA_OPTS=-Xms64m -Xmx1024m"
       - discovery.type=single-node
       - TZ=Asia/Shanghai
+      - node.name=elasticsearch
+      - xpack.security.enabled=false
     expose:
       - 9200
     ports:
@@ -31,10 +33,11 @@ services:
 
   kibana:
     image: kibana:7.16.2
-    container_name: EFK-kibana
+    container_name: kibana
     environment:
       - TZ=Asia/Shanghai
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
       - xpack.security.enabled=false
     ports:
       - "5601:5601"
@@ -49,3 +52,4 @@ networks:
     external:
       name: piggytalk-backend-bridge
   piggytalk-backend-logging-bridge:
+    driver: bridge
