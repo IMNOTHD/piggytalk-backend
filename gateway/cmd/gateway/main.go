@@ -49,7 +49,9 @@ func newApp(logger log.Logger, hs *http.Server, gs *grpc.Server) *kratos.App {
 
 func main() {
 	fluentdService := ServiceDiscover("fluentd1")
-	logger, err := fluent.NewLogger(fmt.Sprintf("tcp://%s:%d", "127.0.0.1", fluentdService.Port), fluent.WithTagPrefix("piggytalk-backend-gateway"))
+	logger, err := fluent.NewLogger(
+		fmt.Sprintf("tcp://%s:%d", "127.0.0.1", fluentdService.Port),
+		fluent.WithTagPrefix("piggytalk-backend-gateway"))
 	if err != nil {
 		panic(err)
 	}

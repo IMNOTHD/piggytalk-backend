@@ -5,17 +5,15 @@ import (
 	"fmt"
 	"os"
 
-	"snowflake/internal/conf"
+	"account/internal/conf"
 
+	consul "github.com/go-kratos/consul/registry"
 	"github.com/go-kratos/kratos/contrib/log/fluent/v2"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/file"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
-	"github.com/go-kratos/kratos/v2/transport/http"
-
-	consul "github.com/go-kratos/consul/registry"
 	"github.com/hashicorp/consul/api"
 )
 
@@ -31,14 +29,14 @@ var (
 
 const (
 	// Name is the name of the compiled software.
-	Name = "piggytalk-backend-snowflake"
+	Name = "piggytalk-backend-account"
 )
 
 func init() {
 	flag.StringVar(&flagconf, "conf", "../../configs", "config path, eg: -conf config.yaml")
 }
 
-func newApp(logger log.Logger, hs *http.Server, gs *grpc.Server) *kratos.App {
+func newApp(logger log.Logger, gs *grpc.Server) *kratos.App {
 	client, err := api.NewClient(&api.Config{
 		Address: "127.0.0.1:8500",
 		Scheme:  "http",
@@ -54,7 +52,6 @@ func newApp(logger log.Logger, hs *http.Server, gs *grpc.Server) *kratos.App {
 		kratos.Metadata(map[string]string{}),
 		kratos.Logger(logger),
 		kratos.Server(
-			hs,
 			gs,
 		),
 		kratos.Registrar(consul.New(client)),
