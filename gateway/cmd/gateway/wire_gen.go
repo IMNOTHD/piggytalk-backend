@@ -7,9 +7,7 @@
 package main
 
 import (
-	"gateway/internal/biz"
 	"gateway/internal/conf"
-	"gateway/internal/data"
 	"gateway/internal/server"
 	"gateway/internal/service"
 	"github.com/go-kratos/kratos/v2"
@@ -19,19 +17,11 @@ import (
 // Injectors from wire.go:
 
 // initApp init kratos application.
-func initApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*kratos.App, func(), error) {
-	dataData, cleanup, err := data.NewData(confData, logger)
-	if err != nil {
-		return nil, nil, err
-	}
-	greeterRepo := data.NewGreeterRepo(dataData, logger)
-	greeterUsecase := biz.NewGreeterUsecase(greeterRepo, logger)
-	greeterService := service.NewGreeterService(greeterUsecase, logger)
+func initApp(confServer *conf.Server, data *conf.Data, logger log.Logger) (*kratos.App, func(), error) {
 	testService := service.NewTestService(logger)
-	httpServer := server.NewHTTPServer(confServer, greeterService, testService, logger)
-	grpcServer := server.NewGRPCServer(confServer, greeterService, logger)
+	httpServer := server.NewHTTPServer(confServer, testService, logger)
+	grpcServer := server.NewGRPCServer(confServer, logger)
 	app := newApp(logger, httpServer, grpcServer)
 	return app, func() {
-		cleanup()
 	}, nil
 }

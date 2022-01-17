@@ -14,7 +14,7 @@ import (
 )
 
 func TestExample(t *testing.T) {
-	client, err := Open(dialect.MySQL, "root:123456@tcp(127.0.0.1:3306)/piggytalk?parseTime=True")
+	client, err := Open(dialect.MySQL, "root:123456@tcp(127.0.0.1:3306)/piggytalk?parseTime=True&loc=Asia/Shanghai")
 	if err != nil {
 		log.Fatalf("failed opening connection to sqlite: %v", err)
 	}

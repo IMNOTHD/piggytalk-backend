@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/go-kratos/consul v0.1.5
+	github.com/go-kratos/kratos/cmd/protoc-gen-go-errors/v2 v2.0.0-20220114051625-83fad75c0f64 // indirect
 	github.com/go-kratos/kratos/contrib/log/fluent/v2 v2.0.0-20220104115032-0bbda717943c
 	github.com/go-kratos/kratos/v2 v2.1.3
 	github.com/golang/protobuf v1.5.2

@@ -130,6 +130,6 @@ func GetGenTime(sid int64) (t string) {
 
 // GetTimestampStatus 获取时间戳已使用的占比：范围（0.0 - 1.0）
 func GetTimestampStatus() (state float64) {
-	state = float64((time.Now().UnixNano()/1000000 - epoch)) / float64(timestampMax)
+	state = float64(time.Now().UnixNano()/1000000-epoch) / float64(timestampMax)
 	return
 }

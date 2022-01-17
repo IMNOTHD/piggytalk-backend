@@ -3,13 +3,12 @@
 
 openapi: 3.0.3
 info:
-    title: Snowflake
+    title: Test
     version: 0.0.1
 paths:
     /snowflake:
         get:
-            summary: generate snowflake id
-            operationId: Snowflake_CreateSnowflake
+            operationId: Test_TestSnowflake
             parameters:
                 - name: dataCenterId
                   in: query
@@ -25,10 +24,10 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/CreateSnowflakeReply'
+                                $ref: '#/components/schemas/TestSnowflakeReply'
 components:
     schemas:
-        CreateSnowflakeReply:
+        TestSnowflakeReply:
             properties:
                 snowFlakeId:
                     type: integer

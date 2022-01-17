@@ -5,34 +5,6 @@ openapi: 3.0.3
 info:
     title: Account
     version: 0.0.1
-paths:
-    /account/v1:
-        post:
-            operationId: Account_Login
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/LoginRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/LoginReply'
+paths: {}
 components:
-    schemas:
-        LoginReply:
-            properties:
-                token:
-                    type: string
-        LoginRequest:
-            properties:
-                account:
-                    type: string
-                    description: user account, like username, email, phone number
-                password:
-                    type: string
-                    description: bcrypt(password+```salt```"piggytalk")
+    schemas: {}

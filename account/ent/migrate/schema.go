@@ -23,9 +23,27 @@ var (
 		Columns:    UsersColumns,
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
 	}
+	// UserInfosColumns holds the columns for the "user_infos" table.
+	UserInfosColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "uuid", Type: field.TypeUUID},
+		{Name: "gmt_create", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "datetime"}},
+		{Name: "gmt_modified", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "datetime"}},
+		{Name: "nickname", Type: field.TypeString},
+		{Name: "avatar", Type: field.TypeString, Default: ""},
+		{Name: "email", Type: field.TypeString},
+		{Name: "phone", Type: field.TypeString},
+	}
+	// UserInfosTable holds the schema information for the "user_infos" table.
+	UserInfosTable = &schema.Table{
+		Name:       "user_infos",
+		Columns:    UserInfosColumns,
+		PrimaryKey: []*schema.Column{UserInfosColumns[0]},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		UsersTable,
+		UserInfosTable,
 	}
 )
 

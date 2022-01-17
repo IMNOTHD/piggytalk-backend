@@ -28,13 +28,15 @@ func (s *TestService) TestSnowflake(ctx context.Context, req *pb.TestSnowflakeRe
 	})
 
 	if err != nil {
+		s.log.Error(err.Error())
 		panic(err)
 	}
 	dis := consul.New(client)
 
-	endpoint := "discovery:///piggytalk-snowflake"
+	endpoint := "discovery:///piggytalk-backend-snowflake"
 	conn, err := grpc.DialInsecure(context.Background(), grpc.WithEndpoint(endpoint), grpc.WithDiscovery(dis))
 	if err != nil {
+		s.log.Error(err.Error())
 		panic(err)
 	}
 	defer conn.Close()
@@ -45,6 +47,7 @@ func (s *TestService) TestSnowflake(ctx context.Context, req *pb.TestSnowflakeRe
 		WorkerId:     req.GetWorkerId(),
 	})
 	if err != nil {
+		s.log.Error(err.Error())
 		panic(err)
 	}
 

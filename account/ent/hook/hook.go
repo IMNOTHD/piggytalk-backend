@@ -21,6 +21,19 @@ func (f UserFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error)
 	return f(ctx, mv)
 }
 
+// The UserInfoFunc type is an adapter to allow the use of ordinary
+// function as UserInfo mutator.
+type UserInfoFunc func(context.Context, *ent.UserInfoMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f UserInfoFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.UserInfoMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserInfoMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // Condition is a hook condition function.
 type Condition func(context.Context, ent.Mutation) bool
 
