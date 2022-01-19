@@ -1,10 +1,10 @@
-package service
+package v1
 
 import (
 	"context"
 
-	pb "account/api/account/v1"
-	v1 "account/internal/biz/account/v1"
+	pb "gateway/api/account/v1"
+	v1 "gateway/internal/biz/account/v1"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -24,7 +24,7 @@ func (s *AccountService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.L
 	return &pb.LoginReply{}, nil
 }
 func (s *AccountService) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterReply, error) {
-	t, err := s.au.CreateUser(ctx, &v1.Account{
+	t, err := s.au.Register(ctx, &v1.Account{
 		Username: req.GetUsername(),
 		Password: req.GetPassword(),
 		Nickname: req.GetNickname(),
@@ -33,8 +33,9 @@ func (s *AccountService) Register(ctx context.Context, req *pb.RegisterRequest) 
 		Avatar:   req.GetAvatar(),
 	})
 	if err != nil {
+		s.log.Error(err)
 		return nil, err
 	}
 
-	return &pb.RegisterReply{Token: t.Token}, nil
+	return &pb.RegisterReply{Token: string(t)}, nil
 }

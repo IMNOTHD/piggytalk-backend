@@ -41,6 +41,7 @@ message RegisterRequest {
   string email = 3;
   string phone = 4;
   string avatar = 5;
+  string nickname = 6;
 }
 
 message RegisterReply {

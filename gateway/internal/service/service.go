@@ -1,6 +1,10 @@
 package service
 
-import "github.com/google/wire"
+import (
+	"gateway/internal/service/account/v1"
+
+	"github.com/google/wire"
+)
 
 // ProviderSet is service providers.
-var ProviderSet = wire.NewSet(NewTestService, NewAccountService)
+var ProviderSet = wire.NewSet(NewTestService, v1.NewAccountService)

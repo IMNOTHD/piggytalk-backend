@@ -5,6 +5,7 @@ import (
 
 	"account/ent"
 	"account/internal/conf"
+	"account/internal/data/account/v1"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-redis/redis/v8"
@@ -12,12 +13,12 @@ import (
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewAccountRepo)
+var ProviderSet = wire.NewSet(NewData, v1.NewAccountRepo)
 
 // Data .
 type Data struct {
-	db  *ent.Client
-	rdb *redis.Client
+	Db  *ent.Client
+	Rdb *redis.Client
 	log *log.Helper
 }
 
@@ -51,8 +52,8 @@ func NewData(conf *conf.Data, logger log.Logger) (*Data, func(), error) {
 		}
 	}
 	return &Data{
-		db:  db,
-		rdb: rdb,
+		Db:  db,
+		Rdb: rdb,
 		log: l,
 	}, cleanup, nil
 }

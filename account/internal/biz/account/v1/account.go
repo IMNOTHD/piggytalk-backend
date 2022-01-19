@@ -1,4 +1,4 @@
-package biz
+package v1
 
 import (
 	"context"
@@ -16,8 +16,14 @@ type Account struct {
 	Avatar   string
 }
 
+const (
+	DeviceWeb   = "web"
+	DevicePhone = "phone"
+)
+
 type TokenInfo struct {
 	Token    string
+	Device   string
 	UserUUID *uuid.UUID
 }
 
@@ -26,19 +32,19 @@ type AccountRepo interface {
 	CreateUserLoginToken(ctx context.Context, t *TokenInfo) (*TokenInfo, error)
 }
 
-type AccountUserCase struct {
+type AccountUsecase struct {
 	repo AccountRepo
 	log  *log.Helper
 }
 
-func NewAccountUserCase(repo AccountRepo, logger log.Logger) *AccountUserCase {
-	return &AccountUserCase{
+func NewAccountUserCase(repo AccountRepo, logger log.Logger) *AccountUsecase {
+	return &AccountUsecase{
 		repo: repo,
-		log:  log.NewHelper(log.With(logger, "module", "account/biz/account", "caller", log.DefaultCaller)),
+		log:  log.NewHelper(log.With(logger, "module", "account/biz/account/v1", "caller", log.DefaultCaller)),
 	}
 }
 
-func (uc *AccountUserCase) CreateUser(ctx context.Context, a *Account) (*TokenInfo, error) {
+func (uc *AccountUsecase) CreateUser(ctx context.Context, a *Account) (*TokenInfo, error) {
 	x, err := uc.repo.CreateUser(ctx, a)
 	if err != nil {
 		return nil, err
@@ -46,10 +52,11 @@ func (uc *AccountUserCase) CreateUser(ctx context.Context, a *Account) (*TokenIn
 
 	return uc.repo.CreateUserLoginToken(ctx, &TokenInfo{
 		Token:    "",
+		Device:   DeviceWeb,
 		UserUUID: x,
 	})
 }
 
-func (uc *AccountUserCase) CheckUserLoginStatus(ctx context.Context, t *TokenInfo) (*TokenInfo, error) {
-
+func (uc *AccountUsecase) CheckUserLoginStatus(ctx context.Context, t *TokenInfo) (*TokenInfo, error) {
+	return nil, nil
 }
