@@ -27,6 +27,8 @@ var (
 	flagconf string
 
 	id, _ = os.Hostname()
+
+	ConsulClient *api.Client
 )
 
 const (
@@ -36,16 +38,18 @@ const (
 
 func init() {
 	flag.StringVar(&flagconf, "conf", "../../configs", "config path, eg: -conf config.yaml")
-}
 
-func newApp(logger log.Logger, hs *http.Server, gs *grpc.Server) *kratos.App {
-	client, err := api.NewClient(&api.Config{
+	c, err := api.NewClient(&api.Config{
 		Address: "127.0.0.1:8500",
 		Scheme:  "http",
 	})
 	if err != nil {
 		panic(err)
 	}
+	ConsulClient = c
+}
+
+func newApp(logger log.Logger, hs *http.Server, gs *grpc.Server) *kratos.App {
 
 	return kratos.New(
 		kratos.ID(id),
@@ -57,7 +61,7 @@ func newApp(logger log.Logger, hs *http.Server, gs *grpc.Server) *kratos.App {
 			hs,
 			gs,
 		),
-		kratos.Registrar(consul.New(client)),
+		kratos.Registrar(consul.New(ConsulClient)),
 	)
 }
 

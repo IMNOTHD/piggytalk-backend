@@ -4,7 +4,7 @@ import (
 	"context"
 
 	pb "account/api/account/v1"
-	v1 "account/internal/biz/account/v1"
+	"account/internal/biz/account/v1"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -16,8 +16,8 @@ type AccountService struct {
 	log *log.Helper
 }
 
-func NewAccountService(logger log.Logger) *AccountService {
-	return &AccountService{log: log.NewHelper(log.With(logger, "module", "account/service/account/v1", "caller", log.DefaultCaller))}
+func NewAccountService(au *v1.AccountUsecase, logger log.Logger) *AccountService {
+	return &AccountService{au: au, log: log.NewHelper(log.With(logger, "module", "account/service/account/v1", "caller", log.DefaultCaller))}
 }
 
 func (s *AccountService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginReply, error) {

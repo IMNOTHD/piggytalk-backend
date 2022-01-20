@@ -6,6 +6,7 @@
 package main
 
 import (
+	"gateway/internal/biz"
 	"gateway/internal/conf"
 	"gateway/internal/server"
 	"gateway/internal/service"
@@ -17,5 +18,5 @@ import (
 
 // initApp init kratos application.
 func initApp(*conf.Server, *conf.Data, log.Logger) (*kratos.App, func(), error) {
-	panic(wire.Build(server.ProviderSet, service.ProviderSet, newApp))
+	panic(wire.Build(server.ProviderSet, biz.ProviderSet, service.ProviderSet, newApp))
 }

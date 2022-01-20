@@ -9,7 +9,7 @@ package main
 import (
 	"account/internal/conf"
 	"account/internal/server"
-	"account/internal/service"
+
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -18,8 +18,7 @@ import (
 
 // initApp init kratos application.
 func initApp(confServer *conf.Server, data *conf.Data, logger log.Logger) (*kratos.App, func(), error) {
-	accountService := service.NewAccountService(logger)
-	grpcServer := server.NewGRPCServer(confServer, accountService, logger)
+	grpcServer := server.NewGRPCServer(confServer, nil, logger)
 	app := newApp(logger, grpcServer)
 	return app, func() {
 	}, nil

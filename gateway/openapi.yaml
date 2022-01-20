@@ -3,8 +3,32 @@
 
 openapi: 3.0.3
 info:
-    title: Account
+    title: Test
     version: 0.0.1
-paths: {}
+paths:
+    /snowflake:
+        get:
+            operationId: Test_TestSnowflake
+            parameters:
+                - name: dataCenterId
+                  in: query
+                  schema:
+                    type: string
+                - name: workerId
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/TestSnowflakeReply'
 components:
-    schemas: {}
+    schemas:
+        TestSnowflakeReply:
+            properties:
+                snowFlakeId:
+                    type: integer
+                    format: int64

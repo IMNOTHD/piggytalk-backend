@@ -37,7 +37,7 @@ type AccountUsecase struct {
 	log  *log.Helper
 }
 
-func NewAccountUserCase(repo AccountRepo, logger log.Logger) *AccountUsecase {
+func NewAccountUsecase(repo AccountRepo, logger log.Logger) *AccountUsecase {
 	return &AccountUsecase{
 		repo: repo,
 		log:  log.NewHelper(log.With(logger, "module", "account/biz/account/v1", "caller", log.DefaultCaller)),

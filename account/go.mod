@@ -9,6 +9,7 @@ require (
 	github.com/go-kratos/kratos/v2 v2.1.4
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/go-sql-driver/mysql v1.5.1-0.20200311113236-681ffa848bae
+	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/uuid v1.3.0
 	github.com/google/wire v0.5.0
 	github.com/hashicorp/consul/api v1.12.0
