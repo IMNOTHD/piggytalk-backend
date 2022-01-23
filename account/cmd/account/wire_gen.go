@@ -7,9 +7,11 @@
 package main
 
 import (
+	"account/internal/biz/account/v1"
 	"account/internal/conf"
+	"account/internal/data"
 	"account/internal/server"
-
+	"account/internal/service/account/v1"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -17,9 +19,17 @@ import (
 // Injectors from wire.go:
 
 // initApp init kratos application.
-func initApp(confServer *conf.Server, data *conf.Data, logger log.Logger) (*kratos.App, func(), error) {
-	grpcServer := server.NewGRPCServer(confServer, nil, logger)
+func initApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*kratos.App, func(), error) {
+	dataData, cleanup, err := data.NewData(confData, logger)
+	if err != nil {
+		return nil, nil, err
+	}
+	accountRepo := data.NewAccountRepo(dataData, logger)
+	accountUsecase := v1.NewAccountUsecase(accountRepo, logger)
+	accountService := service.NewAccountService(accountUsecase, logger)
+	grpcServer := server.NewGRPCServer(confServer, accountService, logger)
 	app := newApp(logger, grpcServer)
 	return app, func() {
+		cleanup()
 	}, nil
 }

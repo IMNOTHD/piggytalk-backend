@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"os"
 
 	"gateway/internal/conf"
 
@@ -14,6 +13,7 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
+	"github.com/google/uuid"
 	"github.com/hashicorp/consul/api"
 )
 
@@ -26,7 +26,7 @@ var (
 	// flagconf is the config flag.
 	flagconf string
 
-	id, _ = os.Hostname()
+	id = uuid.New()
 )
 
 func init() {
@@ -35,7 +35,7 @@ func init() {
 
 func newApp(logger log.Logger, hs *http.Server, gs *grpc.Server) *kratos.App {
 	return kratos.New(
-		kratos.ID(id),
+		kratos.ID(id.String()),
 		kratos.Name(Name),
 		kratos.Version(Version),
 		kratos.Metadata(map[string]string{}),
@@ -49,6 +49,7 @@ func newApp(logger log.Logger, hs *http.Server, gs *grpc.Server) *kratos.App {
 
 func main() {
 	fluentdService := ServiceDiscover("fluentd1")
+	fmt.Println(fluentdService.Port)
 	logger, err := fluent.NewLogger(
 		fmt.Sprintf("tcp://%s:%d", "127.0.0.1", fluentdService.Port),
 		fluent.WithTagPrefix("piggytalk-backend-gateway"))
@@ -78,6 +79,8 @@ func main() {
 		panic(err)
 	}
 	defer cleanup()
+
+	_ = logger.Log(log.LevelInfo, Name, fmt.Sprintf("%s is ready to start...", id.String()))
 
 	// start and wait for stop signal
 	if err := app.Run(); err != nil {

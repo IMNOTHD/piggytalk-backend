@@ -36,7 +36,7 @@ func NewAccountClient(cc grpc.ClientConnInterface) AccountClient {
 
 func (c *accountClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginReply, error) {
 	out := new(LoginReply)
-	err := c.cc.Invoke(ctx, "/api.account.v1.Account/Login", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/account.api.account.v1.Account/Login", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +45,7 @@ func (c *accountClient) Login(ctx context.Context, in *LoginRequest, opts ...grp
 
 func (c *accountClient) Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterReply, error) {
 	out := new(RegisterReply)
-	err := c.cc.Invoke(ctx, "/api.account.v1.Account/Register", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/account.api.account.v1.Account/Register", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func _Account_Login_Handler(srv interface{}, ctx context.Context, dec func(inter
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.account.v1.Account/Login",
+		FullMethod: "/account.api.account.v1.Account/Login",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AccountServer).Login(ctx, req.(*LoginRequest))
@@ -112,7 +112,7 @@ func _Account_Register_Handler(srv interface{}, ctx context.Context, dec func(in
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.account.v1.Account/Register",
+		FullMethod: "/account.api.account.v1.Account/Register",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AccountServer).Register(ctx, req.(*RegisterRequest))
@@ -124,7 +124,7 @@ func _Account_Register_Handler(srv interface{}, ctx context.Context, dec func(in
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Account_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "api.account.v1.Account",
+	ServiceName: "account.api.account.v1.Account",
 	HandlerType: (*AccountServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

@@ -5,15 +5,15 @@ import (
 
 	"account/ent"
 	"account/internal/conf"
-	"account/internal/data/account/v1"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-redis/redis/v8"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/google/wire"
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, v1.NewAccountRepo)
+var ProviderSet = wire.NewSet(NewData, NewAccountRepo)
 
 // Data .
 type Data struct {
@@ -41,6 +41,11 @@ func NewData(conf *conf.Data, logger log.Logger) (*Data, func(), error) {
 		ReadTimeout:  conf.Redis.GetReadTimeout().AsDuration(),
 		WriteTimeout: conf.Redis.GetWriteTimeout().AsDuration(),
 	})
+	_, err = rdb.Ping(context.Background()).Result()
+	if err != nil {
+		l.Errorf("redis ping check error: %v", err)
+		return nil, nil, err
+	}
 
 	cleanup := func() {
 		l.Infof("closing the data resources")

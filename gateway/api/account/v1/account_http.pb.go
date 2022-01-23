@@ -34,7 +34,7 @@ func _Account_Login0_HTTP_Handler(srv AccountHTTPServer) func(ctx http.Context) 
 		if err := ctx.Bind(&in); err != nil {
 			return err
 		}
-		http.SetOperation(ctx, "/api.account.v1.Account/Login")
+		http.SetOperation(ctx, "/gateway.api.account.v1.Account/Login")
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
 			return srv.Login(ctx, req.(*LoginRequest))
 		})
@@ -53,7 +53,7 @@ func _Account_Register0_HTTP_Handler(srv AccountHTTPServer) func(ctx http.Contex
 		if err := ctx.Bind(&in); err != nil {
 			return err
 		}
-		http.SetOperation(ctx, "/api.account.v1.Account/Register")
+		http.SetOperation(ctx, "/gateway.api.account.v1.Account/Register")
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
 			return srv.Register(ctx, req.(*RegisterRequest))
 		})
@@ -83,7 +83,7 @@ func (c *AccountHTTPClientImpl) Login(ctx context.Context, in *LoginRequest, opt
 	var out LoginReply
 	pattern := "/account/v1/login"
 	path := binding.EncodeURL(pattern, in, false)
-	opts = append(opts, http.Operation("/api.account.v1.Account/Login"))
+	opts = append(opts, http.Operation("/gateway.api.account.v1.Account/Login"))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
@@ -96,7 +96,7 @@ func (c *AccountHTTPClientImpl) Register(ctx context.Context, in *RegisterReques
 	var out RegisterReply
 	pattern := "/account/v1/register"
 	path := binding.EncodeURL(pattern, in, false)
-	opts = append(opts, http.Operation("/api.account.v1.Account/Register"))
+	opts = append(opts, http.Operation("/gateway.api.account.v1.Account/Register"))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {

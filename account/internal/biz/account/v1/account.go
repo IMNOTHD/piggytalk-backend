@@ -14,6 +14,7 @@ type Account struct {
 	Email    string
 	Phone    string
 	Avatar   string
+	UUID     uuid.UUID
 }
 
 const (
@@ -30,6 +31,7 @@ type TokenInfo struct {
 type AccountRepo interface {
 	CreateUser(ctx context.Context, a *Account) (*uuid.UUID, error)
 	CreateUserLoginToken(ctx context.Context, t *TokenInfo) (*TokenInfo, error)
+	CheckUserPassword(ctx context.Context, a *Account) (*Account, error)
 }
 
 type AccountUsecase struct {
@@ -42,6 +44,21 @@ func NewAccountUsecase(repo AccountRepo, logger log.Logger) *AccountUsecase {
 		repo: repo,
 		log:  log.NewHelper(log.With(logger, "module", "account/biz/account/v1", "caller", log.DefaultCaller)),
 	}
+}
+
+func (uc *AccountUsecase) Login(ctx context.Context, a *Account) (*Account, *TokenInfo, error) {
+	ac, err := uc.repo.CheckUserPassword(ctx, a)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	t, err := uc.repo.CreateUserLoginToken(ctx, &TokenInfo{
+		Token:    "",
+		Device:   DeviceWeb,
+		UserUUID: &ac.UUID,
+	})
+
+	return ac, t, err
 }
 
 func (uc *AccountUsecase) CreateUser(ctx context.Context, a *Account) (*TokenInfo, error) {

@@ -32,7 +32,7 @@ func _Snowflake_CreateSnowflake0_HTTP_Handler(srv SnowflakeHTTPServer) func(ctx 
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
-		http.SetOperation(ctx, "/api.snowflake.v1.Snowflake/CreateSnowflake")
+		http.SetOperation(ctx, "/snowflake.api.snowflake.v1.Snowflake/CreateSnowflake")
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
 			return srv.CreateSnowflake(ctx, req.(*CreateSnowflakeRequest))
 		})
@@ -61,7 +61,7 @@ func (c *SnowflakeHTTPClientImpl) CreateSnowflake(ctx context.Context, in *Creat
 	var out CreateSnowflakeReply
 	pattern := "/snowflake"
 	path := binding.EncodeURL(pattern, in, true)
-	opts = append(opts, http.Operation("/api.snowflake.v1.Snowflake/CreateSnowflake"))
+	opts = append(opts, http.Operation("/snowflake.api.snowflake.v1.Snowflake/CreateSnowflake"))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {

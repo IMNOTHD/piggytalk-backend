@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	pb "account/api/account/v1"
 	"account/internal/biz/account/v1"
@@ -21,7 +22,27 @@ func NewAccountService(au *v1.AccountUsecase, logger log.Logger) *AccountService
 }
 
 func (s *AccountService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginReply, error) {
-	return &pb.LoginReply{}, nil
+	a, t, err := s.au.Login(ctx, &v1.Account{
+		Username: req.GetAccount(),
+		Password: req.GetPassword(),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	p := ""
+	if a.Phone != "" {
+		p = fmt.Sprintf("%s******%s", a.Phone[0:3], a.Phone[len(a.Phone)-2:])
+	}
+
+	return &pb.LoginReply{
+		Token:    t.Token,
+		Username: a.Username,
+		Email:    a.Email,
+		Phone:    p,
+		Avatar:   a.Avatar,
+		Nickname: a.Nickname,
+	}, nil
 }
 func (s *AccountService) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterReply, error) {
 	t, err := s.au.CreateUser(ctx, &v1.Account{
@@ -35,6 +56,8 @@ func (s *AccountService) Register(ctx context.Context, req *pb.RegisterRequest) 
 	if err != nil {
 		return nil, err
 	}
+
+	fmt.Println(t.Token)
 
 	return &pb.RegisterReply{Token: t.Token}, nil
 }

@@ -1,10 +1,10 @@
 syntax = "proto3";
 
-package api.account.v1;
+package account.api.account.v1;
 
 import "google/api/annotations.proto";
 
-option go_package = "account/api/account/v1;v1";
+option go_package = "gateway/internal/api/account/account/v1;v1";
 option java_multiple_files = true;
 option java_package = "api.account.v1";
 
@@ -16,12 +16,17 @@ service Account {
 message LoginRequest {
   // user account, like username, email, phone number
   string account = 1;
-  // bcrypt(password+"piggytalk")
+  // md5(password+"piggytalk")
   string password = 2;
 }
 
 message LoginReply {
   string token = 1;
+  string username = 2;
+  string email = 3;
+  string phone = 4;
+  string avatar = 5;
+  string nickname = 6;
 }
 
 message RegisterRequest {

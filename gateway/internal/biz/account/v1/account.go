@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	_usernameExp = `^[a-zA-Z0-9_]{3,16}$`
+	_usernameExp = `^[a-zA-Z][a-zA-Z0-9_]{2,15}$`
 	_emailExp    = `^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$`
 	_phoneExp    = `^1(3\d|4[5-9]|5[0-35-9]|6[2567]|7[0-8]|8\d|9[0-35-9])\d{8}$`
 )
@@ -36,11 +36,36 @@ type AccountUsecase struct {
 	log  *log.Helper
 }
 
-func NewAccountUsecase(repo AccountRepo, logger log.Logger) *AccountUsecase {
+func NewAccountUsecase(logger log.Logger) *AccountUsecase {
 	return &AccountUsecase{
-		repo: repo,
-		log:  log.NewHelper(log.With(logger, "module", "gateway/biz/account/v1", "caller", log.DefaultCaller)),
+		log: log.NewHelper(log.With(logger, "module", "gateway/biz/account/v1", "caller", log.DefaultCaller)),
 	}
+}
+
+func (au *AccountUsecase) Login(ctx context.Context, a *Account) (*Account, Token, error) {
+	conn, err := kit.ServiceConn(kit.AccountEndpoint)
+	if err != nil {
+		au.log.Error(err)
+		return nil, "", err
+	}
+	c := v1.NewAccountClient(conn)
+
+	ar, err := c.Login(ctx, &v1.LoginRequest{
+		Account:  a.Username,
+		Password: a.Password,
+	})
+	if err != nil {
+		au.log.Error(err)
+		return nil, "", err
+	}
+
+	return &Account{
+		Username: ar.GetUsername(),
+		Nickname: ar.GetNickname(),
+		Email:    ar.Email,
+		Phone:    ar.Phone,
+		Avatar:   ar.GetAvatar(),
+	}, Token(ar.GetToken()), nil
 }
 
 func (au *AccountUsecase) Register(ctx context.Context, a *Account) (Token, error) {
@@ -55,6 +80,9 @@ func (au *AccountUsecase) Register(ctx context.Context, a *Account) (Token, erro
 	}
 	if r := regexp.MustCompile(_phoneExp); a.Phone != "" && !r.Match([]byte(a.Phone)) {
 		return "", errors.New(400, "BAD_REQUEST", "手机格式错误")
+	}
+	if len(a.Nickname) <= 0 || len(a.Nickname) > 32 {
+		return "", errors.New(400, "BAD_REQUEST", "昵称过长")
 	}
 
 	conn, err := kit.ServiceConn(kit.AccountEndpoint)

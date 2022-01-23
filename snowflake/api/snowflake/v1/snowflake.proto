@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package api.snowflake.v1;
+package snowflake.api.snowflake.v1;
 
 import "google/api/annotations.proto";
 

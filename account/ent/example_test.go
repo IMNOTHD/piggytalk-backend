@@ -7,23 +7,25 @@ import (
 	"testing"
 	"time"
 
-	"entgo.io/ent/dialect"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
 func TestExample(t *testing.T) {
-	client, err := Open(dialect.MySQL, "root:123456@tcp(127.0.0.1:3306)/piggytalk?parseTime=True&loc=Asia/Shanghai")
-	if err != nil {
-		log.Fatalf("failed opening connection to sqlite: %v", err)
-	}
-	defer client.Close()
-	ctx := context.Background()
+	hash, _ := bcrypt.GenerateFromPassword([]byte("123456piggytalk"), 0)
+	fmt.Println(string(hash))
 
-	if err := client.Schema.Create(ctx); err != nil {
-		log.Fatalf("failed creating schema resources: %v", err)
-	}
+	//client, err := Open(dialect.MySQL, "root:123456@tcp(127.0.0.1:3306)/piggytalk?parseTime=True&loc=Asia/Shanghai")
+	//if err != nil {
+	//	log.Fatalf("failed opening connection to sqlite: %v", err)
+	//}
+	//defer client.Close()
+	//ctx := context.Background()
+	//
+	//if err := client.Schema.Create(ctx); err != nil {
+	//	log.Fatalf("failed creating schema resources: %v", err)
+	//}
 	//_, err = CreateUser(ctx, client)
 	//if err != nil {
 	//	fmt.Printf("failed creating user: %v", err)

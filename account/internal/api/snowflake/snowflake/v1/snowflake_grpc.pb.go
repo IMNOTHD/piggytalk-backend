@@ -36,7 +36,7 @@ func NewSnowflakeClient(cc grpc.ClientConnInterface) SnowflakeClient {
 
 func (c *snowflakeClient) CreateSnowflake(ctx context.Context, in *CreateSnowflakeRequest, opts ...grpc.CallOption) (*CreateSnowflakeReply, error) {
 	out := new(CreateSnowflakeReply)
-	err := c.cc.Invoke(ctx, "/api.snowflake.v1.Snowflake/CreateSnowflake", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/snowflake.api.snowflake.v1.Snowflake/CreateSnowflake", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +82,7 @@ func _Snowflake_CreateSnowflake_Handler(srv interface{}, ctx context.Context, de
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.snowflake.v1.Snowflake/CreateSnowflake",
+		FullMethod: "/snowflake.api.snowflake.v1.Snowflake/CreateSnowflake",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(SnowflakeServer).CreateSnowflake(ctx, req.(*CreateSnowflakeRequest))
@@ -94,7 +94,7 @@ func _Snowflake_CreateSnowflake_Handler(srv interface{}, ctx context.Context, de
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Snowflake_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "api.snowflake.v1.Snowflake",
+	ServiceName: "snowflake.api.snowflake.v1.Snowflake",
 	HandlerType: (*SnowflakeServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

@@ -7,9 +7,11 @@
 package main
 
 import (
+	"gateway/internal/biz/account/v1"
 	"gateway/internal/conf"
 	"gateway/internal/server"
 	"gateway/internal/service"
+	v1_2 "gateway/internal/service/account/v1"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -19,7 +21,9 @@ import (
 // initApp init kratos application.
 func initApp(confServer *conf.Server, data *conf.Data, logger log.Logger) (*kratos.App, func(), error) {
 	testService := service.NewTestService(logger)
-	httpServer := server.NewHTTPServer(confServer, testService, logger)
+	accountUsecase := v1.NewAccountUsecase(logger)
+	accountService := v1_2.NewAccountService(accountUsecase, logger)
+	httpServer := server.NewHTTPServer(confServer, testService, accountService, logger)
 	grpcServer := server.NewGRPCServer(confServer, logger)
 	app := newApp(logger, httpServer, grpcServer)
 	return app, func() {

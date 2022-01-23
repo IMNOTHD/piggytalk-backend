@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package gateway.api.account.v1;
+package account.api.account.v1;
 import "errors/errors.proto";
 
 option go_package = "gateway/api/account/v1;v1";
