@@ -3,13 +3,14 @@ package data
 import (
 	"context"
 
-	"account/ent"
 	"account/internal/conf"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-redis/redis/v8"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/google/wire"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
 // ProviderSet is data providers.
@@ -17,7 +18,7 @@ var ProviderSet = wire.NewSet(NewData, NewAccountRepo)
 
 // Data .
 type Data struct {
-	Db  *ent.Client
+	Db  *gorm.DB
 	Rdb *redis.Client
 	log *log.Helper
 }
@@ -25,13 +26,25 @@ type Data struct {
 // NewData .
 func NewData(conf *conf.Data, logger log.Logger) (*Data, func(), error) {
 	l := log.NewHelper(logger)
-	db, err := ent.Open(conf.Database.GetDriver(), conf.Database.GetSource())
+	db, err := gorm.Open(mysql.Open(conf.Database.GetSource()), &gorm.Config{})
 	if err != nil {
 		l.Error(err)
 		return nil, nil, err
 	}
-	if err := db.Schema.Create(context.Background()); err != nil {
-		l.Errorf("failed creating schema resources: %v", err)
+
+	// 检验表格是否存在
+	if !db.Migrator().HasTable(&User{}) {
+		err = db.Migrator().CreateTable(&User{})
+	}
+	if err != nil {
+		l.Error(err)
+		return nil, nil, err
+	}
+	if !db.Migrator().HasTable(&UserInfo{}) {
+		err = db.Migrator().CreateTable(&UserInfo{})
+	}
+	if err != nil {
+		l.Error(err)
 		return nil, nil, err
 	}
 
@@ -49,7 +62,8 @@ func NewData(conf *conf.Data, logger log.Logger) (*Data, func(), error) {
 
 	cleanup := func() {
 		l.Infof("closing the data resources")
-		if err := db.Close(); err != nil {
+		x, _ := db.DB()
+		if err := x.Close(); err != nil {
 			l.Error(err)
 		}
 		if err := rdb.Close(); err != nil {

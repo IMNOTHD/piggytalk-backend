@@ -6,8 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	"account/ent/user"
-	"account/ent/userinfo"
 	sv1 "account/internal/api/snowflake/snowflake/v1"
 	"account/internal/biz/account/v1"
 	"account/internal/kit"
@@ -16,6 +14,7 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 type accountRepo struct {
@@ -31,81 +30,99 @@ func NewAccountRepo(data *Data, logger log.Logger) v1.AccountRepo {
 	}
 }
 
+type User struct {
+	ID        uint
+	Username  string    `gorm:"unique;not null"`
+	Password  string    `gorm:"not null"`
+	UUID      uuid.UUID `gorm:"not null"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
+type UserInfo struct {
+	ID        uint
+	UUID      uuid.UUID `gorm:"not null"`
+	Nickname  string    `gorm:"not null"`
+	Avatar    string
+	Email     string
+	Phone     string
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
 func (r *accountRepo) CheckUserPassword(ctx context.Context, a *v1.Account) (*v1.Account, error) {
-	ux, err := r.data.Db.User.
-		Query().
-		Where(user.UsernameEQ(a.Username)).
-		All(ctx)
-	if err != nil {
-		r.log.Error(err)
-		return nil, err
-	}
-	xx, err := r.data.Db.UserInfo.
-		Query().
-		Where(userinfo.Or(
-			userinfo.PhoneEQ(a.Username),
-			userinfo.EmailEQ(a.Email))).
-		All(ctx)
-	if len(ux) == 0 && len(xx) == 0 {
-		r.log.Infof("user not exists: %s", a.Username)
-		return nil, errors.New(400, "BAD_REQUEST", "用户名或密码错误")
-	}
+	var u User
+	var ui UserInfo
 
-	var uid uuid.UUID
-	if len(ux) != 0 {
-		u := ux[0]
-		uid = u.UUID
-		//验证密码
-		err = bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(a.Password+uid.String()))
-		if err != nil {
-			r.log.Infof("user password error: %s", a.Username)
-			return nil, errors.New(400, "BAD_REQUEST", "用户名或密码错误")
-		}
-
-		x, err := r.data.Db.UserInfo.
-			Query().
-			Where(userinfo.UUIDEQ(uid)).
-			First(ctx)
-		if err != nil {
-			r.log.Error(err)
-			return nil, err
-		}
-		return &v1.Account{
-			Username: u.Username,
-			Nickname: x.Nickname,
-			Email:    x.Email,
-			Phone:    x.Phone,
-			Avatar:   x.Avatar,
-			UUID:     uid,
-		}, nil
-	} else {
-		x := xx[0]
-		uid = x.UUID
-		u, err := r.data.Db.User.
-			Query().
-			Where(user.UUIDEQ(uid)).
-			First(ctx)
-		if err != nil {
-			r.log.Error(err)
-			return nil, err
-		}
+	// username查询
+	ru := r.data.Db.Where(&User{
+		Username: a.Username,
+	}).First(&u)
+	if ru.Error != nil && !errors.Is(ru.Error, gorm.ErrRecordNotFound) {
+		r.log.Error(ru.Error)
+		return nil, ru.Error
+	}
+	if ru.RowsAffected != 0 {
 		// 验证密码
-		err = bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(a.Password+uid.String()))
+		err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(a.Password+u.UUID.String()))
 		if err != nil {
 			r.log.Infof("user password error: %s", a.Username)
 			return nil, errors.New(400, "BAD_REQUEST", "用户名或密码错误")
 		}
 
+		if rui := r.data.Db.Where(&UserInfo{UUID: u.UUID}).First(&ui); rui.Error != nil {
+			r.log.Error(rui.Error)
+			return nil, rui.Error
+		}
+
+		r.log.Infof("%s success check password", u.UUID)
 		return &v1.Account{
 			Username: u.Username,
-			Nickname: x.Nickname,
-			Email:    x.Email,
-			Phone:    x.Phone,
-			Avatar:   x.Avatar,
-			UUID:     uid,
+			Nickname: ui.Nickname,
+			Email:    ui.Email,
+			Phone:    ui.Phone,
+			Avatar:   ui.Avatar,
+			UUID:     u.UUID,
 		}, nil
 	}
 
+	// phone, email查询
+	rui := r.data.Db.Where(&UserInfo{
+		Email: a.Username,
+	}).Or(&UserInfo{
+		Phone: a.Username,
+	}).First(&ui)
+	if rui.Error != nil && !errors.Is(rui.Error, gorm.ErrRecordNotFound) {
+		r.log.Error(rui.Error)
+		return nil, rui.Error
+	}
+	if rui.RowsAffected != 0 {
+		if ru := r.data.Db.Where(&User{UUID: ui.UUID}).First(&u); ru.Error != nil {
+			r.log.Error(rui.Error)
+			return nil, rui.Error
+		}
+
+		// 验证密码
+		err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(a.Password+u.UUID.String()))
+		if err != nil {
+			r.log.Infof("user password error: %s", a.Username)
+			return nil, errors.New(400, "BAD_REQUEST", "用户名或密码错误")
+		}
+
+		r.log.Infof("%s success check password", u.UUID)
+		return &v1.Account{
+			Username: u.Username,
+			Nickname: ui.Nickname,
+			Email:    ui.Email,
+			Phone:    ui.Phone,
+			Avatar:   ui.Avatar,
+			UUID:     u.UUID,
+		}, nil
+	}
+
+	// 用户未找到
+	r.log.Infof("user not exists: %s", a.Username)
+	return nil, errors.New(400, "BAD_REQUEST", "用户名或密码错误")
 }
 
 func (r *accountRepo) CreateUserLoginToken(ctx context.Context, t *v1.TokenInfo) (*v1.TokenInfo, error) {
@@ -149,43 +166,49 @@ func (r *accountRepo) CreateUserLoginToken(ctx context.Context, t *v1.TokenInfo)
 		return nil, x.Err()
 	}
 
+	r.log.Infof("%s success login in device %s", t.UserUUID, t.Device)
 	return t, nil
 }
 
 func (r *accountRepo) CreateUser(ctx context.Context, a *v1.Account) (*uuid.UUID, error) {
-	x, err := r.data.Db.User.
-		Query().
-		Where(user.UsernameEQ(a.Username)).
-		All(ctx)
-	if err != nil {
-		r.log.Error(err)
-		return nil, err
+	var u User
+	var ui UserInfo
+
+	// username查询
+	ru := r.data.Db.Where(&User{
+		Username: a.Username,
+	}).Find(&u)
+	if ru.Error != nil && !errors.Is(ru.Error, gorm.ErrRecordNotFound) {
+		r.log.Error(ru.Error)
+		return nil, ru.Error
 	}
-	if len(x) != 0 {
-		r.log.Infof("username exists: %s", a.Username)
+	if ru.RowsAffected != 0 {
+		r.log.Errorf("username exists: %s", a.Username)
 		return nil, errors.New(400, "BAD_REQUEST", "用户名已存在")
 	}
-	y, err := r.data.Db.UserInfo.
-		Query().
-		Where(userinfo.PhoneEQ(a.Phone)).
-		All(ctx)
-	if err != nil {
-		r.log.Error(err)
-		return nil, err
+
+	// phone查询
+	rui := r.data.Db.Where(&UserInfo{
+		Phone: a.Phone,
+	}).First(&ui)
+	if rui.Error != nil && !errors.Is(rui.Error, gorm.ErrRecordNotFound) {
+		r.log.Error(rui.Error)
+		return nil, rui.Error
 	}
-	if len(y) != 0 {
+	if rui.RowsAffected != 0 {
 		r.log.Infof("phone exists: %s", a.Phone)
 		return nil, errors.New(400, "BAD_REQUEST", "手机已被使用")
 	}
-	z, err := r.data.Db.UserInfo.
-		Query().
-		Where(userinfo.EmailEQ(a.Email)).
-		All(ctx)
-	if err != nil {
-		r.log.Error(err)
-		return nil, err
+
+	// email查询
+	rui = r.data.Db.Where(&UserInfo{
+		Email: a.Email,
+	}).First(&ui)
+	if rui.Error != nil && !errors.Is(rui.Error, gorm.ErrRecordNotFound) {
+		r.log.Error(rui.Error)
+		return nil, rui.Error
 	}
-	if len(z) != 0 {
+	if rui.RowsAffected != 0 {
 		r.log.Infof("email exists: %s", a.Email)
 		return nil, errors.New(400, "BAD_REQUEST", "邮箱已被使用")
 	}
@@ -197,28 +220,25 @@ func (r *accountRepo) CreateUser(ctx context.Context, a *v1.Account) (*uuid.UUID
 		return nil, err
 	}
 
-	u, err := r.data.Db.User.Create().
-		SetUsername(a.Username).
-		SetPassword(string(hash)).
-		SetUUID(userUuid).
-		SetGmtCreate(time.Now()).
-		SetGmtModified(time.Now()).
-		Save(ctx)
-	if err != nil {
+	ru = r.data.Db.Create(&User{
+		Username: a.Username,
+		Password: string(hash),
+		UUID:     userUuid,
+	})
+	if ru.Error != nil {
 		r.log.Error(err)
 		return nil, err
 	}
 	r.log.Infof("success create user %s, id %d", u.Username, u.ID)
 
-	ui, err := r.data.Db.UserInfo.Create().
-		SetUUID(userUuid).
-		SetGmtCreate(time.Now()).
-		SetGmtModified(time.Now()).
-		SetNickname(a.Nickname).
-		SetEmail(a.Email).
-		SetPhone(a.Phone).
-		Save(ctx)
-	if err != nil {
+	ru = r.data.Db.Create(&UserInfo{
+		UUID:     userUuid,
+		Nickname: a.Nickname,
+		Avatar:   "",
+		Email:    a.Email,
+		Phone:    a.Phone,
+	})
+	if ru.Error != nil {
 		r.log.Error(err)
 		return nil, err
 	}
