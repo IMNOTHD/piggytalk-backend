@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package account.api.relation.v1;
+
+option go_package = "account/api/relation/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.relation.v1";
+
+service GroupRelation {
+	rpc CreateGroupRelation (CreateGroupRelationRequest) returns (CreateGroupRelationReply);
+	rpc UpdateGroupRelation (UpdateGroupRelationRequest) returns (UpdateGroupRelationReply);
+	rpc DeleteGroupRelation (DeleteGroupRelationRequest) returns (DeleteGroupRelationReply);
+	rpc GetGroupRelation (GetGroupRelationRequest) returns (GetGroupRelationReply);
+	rpc ListGroupRelation (ListGroupRelationRequest) returns (ListGroupRelationReply);
+}
+
+message CreateGroupRelationRequest {}
+message CreateGroupRelationReply {}
+
+message UpdateGroupRelationRequest {}
+message UpdateGroupRelationReply {}
+
+message DeleteGroupRelationRequest {}
+message DeleteGroupRelationReply {}
+
+message GetGroupRelationRequest {}
+message GetGroupRelationReply {}
+
+message ListGroupRelationRequest {}
+message ListGroupRelationReply {}

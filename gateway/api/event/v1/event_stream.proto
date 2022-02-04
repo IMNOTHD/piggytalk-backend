@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package gateway.api.event.v1;
+
+option go_package = "gateway/api/event/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.event.v1";
+
+service EventStream {
+	rpc EventStream (stream EventStreamRequest) returns (stream EventStreamResponse){};
+}
+
+message EventStreamRequest {
+	string token = 1;
+	oneof event {
+		OnlineRequest onlineRequest = 2;
+		BeatHeartRequest beatHeartRequest = 3;
+	}
+}
+
+message EventStreamResponse {
+	string token = 1;
+	oneof event {
+		OnlineResponse onlineResponse = 2;
+		BeatHeartResponse beatHeartResponse = 3;
+	}
+}
+
+// ------------------------------
+// 以下为客户端发起的request event
+message OnlineRequest {
+	string token = 1;
+}
+
+message BeatHeartRequest {
+	string sessionId = 1;
+}
+
+// ------------------------------
+// 以下为服务端发起的request event
+message OnlineResponse {
+	string sessionId = 1;
+}
+
+message BeatHeartResponse {
+	enum Flag {
+		// 送达
+		ACK = 0;
+		// sessionId或服务失效, 需要发起online请求
+		FIN = 1;
+		// token失效, 需要重新登录
+		RST = 2;
+	}
+	Flag flag = 1;
+}

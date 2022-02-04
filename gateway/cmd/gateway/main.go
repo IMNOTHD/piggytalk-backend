@@ -49,7 +49,7 @@ func newApp(logger log.Logger, hs *http.Server, gs *grpc.Server) *kratos.App {
 
 func main() {
 	fluentdService := ServiceDiscover("fluentd1")
-	fmt.Println(fluentdService.Port)
+
 	logger, err := fluent.NewLogger(
 		fmt.Sprintf("tcp://%s:%d", "127.0.0.1", fluentdService.Port),
 		fluent.WithTagPrefix("piggytalk-backend-gateway"))
@@ -92,9 +92,9 @@ func main() {
 func ServiceDiscover(serviceID string) *api.AgentService {
 
 	// 创建Consul客户端连接
-	config := api.DefaultConfig()
-	config.Address = "127.0.0.1:8500"
-	client, err := api.NewClient(config)
+	consulConfig := api.DefaultConfig()
+	consulConfig.Address = "127.0.0.1:8500"
+	client, err := api.NewClient(consulConfig)
 	if err != nil {
 		panic(err)
 	}
