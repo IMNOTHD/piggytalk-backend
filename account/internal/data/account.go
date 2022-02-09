@@ -26,7 +26,7 @@ type accountRepo struct {
 func NewAccountRepo(data *Data, logger log.Logger) v1.AccountRepo {
 	return &accountRepo{
 		data: data,
-		log:  log.NewHelper(log.With(logger, "module", "account/data/account/v1", "caller", log.DefaultCaller)),
+		log:  log.NewHelper(log.With(logger, "module", "account/data/account", "caller", log.DefaultCaller)),
 	}
 }
 
@@ -48,6 +48,32 @@ type UserInfo struct {
 	Phone     string
 	CreatedAt time.Time
 	UpdatedAt time.Time
+}
+
+func (r *accountRepo) CheckToken(ctx context.Context, t *v1.TokenInfo) (*v1.TokenInfo, error) {
+	var buffer bytes.Buffer
+	buffer.WriteString("piggytalk:account:token2uuid:")
+	buffer.WriteString(string(t.Device))
+	buffer.WriteString(":")
+	buffer.WriteString(t.Token)
+
+	v, err := r.data.Rdb.Get(ctx, buffer.String()).Result()
+	if err != nil {
+		r.log.Error(err)
+		return nil, err
+	}
+
+	uid, err := uuid.Parse(v)
+	if err != nil {
+		r.log.Error(err)
+		return nil, err
+	}
+
+	return &v1.TokenInfo{
+		Token:    t.Token,
+		Device:   t.Device,
+		UserUUID: &uid,
+	}, nil
 }
 
 func (r *accountRepo) CheckUserPassword(ctx context.Context, a *v1.Account) (*v1.Account, error) {

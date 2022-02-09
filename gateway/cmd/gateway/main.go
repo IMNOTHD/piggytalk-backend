@@ -3,9 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
+	"math/rand"
+	"strconv"
 
 	"gateway/internal/conf"
 
+	consul "github.com/go-kratos/consul/registry"
 	"github.com/go-kratos/kratos/contrib/log/fluent/v2"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/config"
@@ -13,29 +16,42 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
-	"github.com/google/uuid"
 	"github.com/hashicorp/consul/api"
 )
 
 // go build -ldflags "-X main.Version=x.y.z"
 var (
-	// Name is the name of the compiled software.
-	Name string
 	// Version is the version of the compiled software.
 	Version string
 	// flagconf is the config flag.
 	flagconf string
 
-	id = uuid.New()
+	ConsulClient *api.Client
+
+	// ID和WorkerId已被移入conf\global.go
+)
+
+const (
+	// Name is the name of the compiled software.
+	Name = "piggytalk-backend-gateway"
 )
 
 func init() {
 	flag.StringVar(&flagconf, "conf", "../../configs", "config path, eg: -conf config.yaml")
+
+	c, err := api.NewClient(&api.Config{
+		Address: "127.0.0.1:8500",
+		Scheme:  "http",
+	})
+	if err != nil {
+		panic(err)
+	}
+	ConsulClient = c
 }
 
 func newApp(logger log.Logger, hs *http.Server, gs *grpc.Server) *kratos.App {
 	return kratos.New(
-		kratos.ID(id.String()),
+		kratos.ID(conf.ID.String()),
 		kratos.Name(Name),
 		kratos.Version(Version),
 		kratos.Metadata(map[string]string{}),
@@ -44,6 +60,7 @@ func newApp(logger log.Logger, hs *http.Server, gs *grpc.Server) *kratos.App {
 			hs,
 			gs,
 		),
+		kratos.Registrar(consul.New(ConsulClient)),
 	)
 }
 
@@ -74,13 +91,73 @@ func main() {
 		panic(err)
 	}
 
+	// 在consul的kv中注册workerId
+	lock, err := ConsulClient.LockOpts(&api.LockOptions{
+		Key:         "workerIdGeneratorLocker",
+		Value:       []byte(conf.ID.String()),
+		SessionName: conf.ID.String(),
+		SessionTTL:  "10s",
+	})
+	if err != nil {
+		panic(err)
+	}
+	ch := make(chan struct{})
+	_, err = lock.Lock(ch)
+	if err != nil {
+		panic(err)
+	}
+	conf.WorkerId = uint(rand.Intn(1 << 7))
+	kv, _, err := ConsulClient.KV().Get(strconv.Itoa(int(conf.WorkerId)), nil)
+	if err != nil {
+		_ = lock.Unlock()
+		panic(err)
+	}
+	for kv != nil {
+		conf.WorkerId = uint(rand.Intn(1 << 7))
+		kv, _, err = ConsulClient.KV().Get(strconv.Itoa(int(conf.WorkerId)), nil)
+		if err != nil {
+			fmt.Println(err)
+			_ = lock.Unlock()
+			return
+		}
+	}
+	_, err = ConsulClient.KV().Put(&api.KVPair{
+		Key:   strconv.Itoa(int(conf.WorkerId)),
+		Value: []byte(conf.ID.String()),
+	}, nil)
+	_, err = ConsulClient.KV().Put(&api.KVPair{
+		Key:   conf.ID.String(),
+		Value: []byte(strconv.Itoa(int(conf.WorkerId))),
+	}, nil)
+	if err != nil {
+		_ = lock.Unlock()
+		panic(err)
+	}
+	_ = logger.Log(log.LevelInfo, Name, fmt.Sprintf("%s %s success register workerId %d", Name, conf.ID.String(), conf.WorkerId))
+
+	close(ch)
+	err = lock.Unlock()
+	if err != nil {
+		fmt.Println(err)
+	}
+
 	app, cleanup, err := initApp(bc.Server, bc.Data, logger)
 	if err != nil {
 		panic(err)
 	}
 	defer cleanup()
+	defer func() {
+		_, err := ConsulClient.KV().Delete(strconv.Itoa(int(conf.WorkerId)), nil)
+		if err != nil {
+			fmt.Println(err)
+		}
+		_, err = ConsulClient.KV().Delete(conf.ID.String(), nil)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}()
 
-	_ = logger.Log(log.LevelInfo, Name, fmt.Sprintf("%s is ready to start...", id.String()))
+	_ = logger.Log(log.LevelInfo, Name, fmt.Sprintf("%s is ready to start...", conf.ID.String()))
 
 	// start and wait for stop signal
 	if err := app.Run(); err != nil {

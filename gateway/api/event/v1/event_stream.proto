@@ -15,6 +15,7 @@ message EventStreamRequest {
 	oneof event {
 		OnlineRequest onlineRequest = 2;
 		BeatHeartRequest beatHeartRequest = 3;
+		OfflineRequest offlineRequest = 4;
 	}
 }
 
@@ -23,25 +24,39 @@ message EventStreamResponse {
 	oneof event {
 		OnlineResponse onlineResponse = 2;
 		BeatHeartResponse beatHeartResponse = 3;
+		OfflineResponse offlineResponse = 4;
 	}
 }
 
 // ------------------------------
 // 以下为客户端发起的request event
+
+// 登录后上线request
 message OnlineRequest {
 	string token = 1;
 }
 
+// 心跳request
 message BeatHeartRequest {
 	string sessionId = 1;
 }
 
+// 下线request
+message OfflineRequest {
+	string token = 1;
+	string sessionId = 2;
+}
+
 // ------------------------------
 // 以下为服务端发起的request event
+
+// 登录后上线response
 message OnlineResponse {
 	string sessionId = 1;
 }
 
+
+// 心跳response
 message BeatHeartResponse {
 	enum Flag {
 		// 送达
@@ -52,4 +67,9 @@ message BeatHeartResponse {
 		RST = 2;
 	}
 	Flag flag = 1;
+}
+
+// 下线response
+message OfflineResponse {
+	string token = 1;
 }

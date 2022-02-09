@@ -24,7 +24,7 @@ var (
 	// flagconf is the config flag.
 	flagconf string
 
-	id = uuid.New()
+	ID = uuid.New()
 
 	ConsulClient *api.Client
 )
@@ -49,7 +49,7 @@ func init() {
 
 func newApp(logger log.Logger, gs *grpc.Server) *kratos.App {
 	return kratos.New(
-		kratos.ID(id.String()),
+		kratos.ID(ID.String()),
 		kratos.Name(Name),
 		kratos.Version(Version),
 		kratos.Metadata(map[string]string{}),
@@ -93,7 +93,7 @@ func main() {
 	}
 	defer cleanup()
 
-	_ = logger.Log(log.LevelInfo, Name, fmt.Sprintf("%s is ready to start...", id.String()))
+	_ = logger.Log(log.LevelInfo, Name, fmt.Sprintf("%s is ready to start...", ID.String()))
 
 	// start and wait for stop signal
 	if err := app.Run(); err != nil {

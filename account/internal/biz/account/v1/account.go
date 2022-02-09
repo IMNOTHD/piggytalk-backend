@@ -32,6 +32,7 @@ type AccountRepo interface {
 	CreateUser(ctx context.Context, a *Account) (*uuid.UUID, error)
 	CreateUserLoginToken(ctx context.Context, t *TokenInfo) (*TokenInfo, error)
 	CheckUserPassword(ctx context.Context, a *Account) (*Account, error)
+	CheckToken(ctx context.Context, t *TokenInfo) (*TokenInfo, error)
 }
 
 type AccountUsecase struct {
@@ -75,5 +76,13 @@ func (uc *AccountUsecase) CreateUser(ctx context.Context, a *Account) (*TokenInf
 }
 
 func (uc *AccountUsecase) CheckUserLoginStatus(ctx context.Context, t *TokenInfo) (*TokenInfo, error) {
-	return nil, nil
+	t, err := uc.repo.CheckToken(ctx, &TokenInfo{
+		Token:  t.Token,
+		Device: t.Device,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return t, nil
 }

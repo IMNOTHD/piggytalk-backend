@@ -34,8 +34,11 @@ func (s *EventStreamService) EventStream(conn pb.EventStream_EventStreamServer) 
 
 		switch req.Event.(type) {
 		case *pb.EventStreamRequest_OnlineRequest:
+
 			break
 		case *pb.EventStreamRequest_BeatHeartRequest:
+			break
+		case *pb.EventStreamRequest_OfflineRequest:
 			break
 		}
 

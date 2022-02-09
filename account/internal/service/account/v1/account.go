@@ -57,7 +57,31 @@ func (s *AccountService) Register(ctx context.Context, req *pb.RegisterRequest) 
 		return nil, err
 	}
 
-	fmt.Println(t.Token)
-
 	return &pb.RegisterReply{Token: t.Token}, nil
+}
+
+func (s *AccountService) CheckLoginStat(ctx context.Context, req *pb.CheckLoginStatRequest) (*pb.CheckLoginStatResponse, error) {
+	t, err := s.au.CheckUserLoginStatus(ctx, &v1.TokenInfo{Token: req.GetToken(), Device: v1.DeviceWeb})
+	if err != nil {
+		return nil, err
+	}
+
+	if t.Token == req.Token {
+		switch t.Device {
+		case v1.DeviceWeb:
+			return &pb.CheckLoginStatResponse{
+				Token:  t.Token,
+				Device: pb.CheckLoginStatResponse_WEB,
+				Uuid:   t.UserUUID.String(),
+			}, nil
+		case v1.DevicePhone:
+			return &pb.CheckLoginStatResponse{
+				Token:  t.Token,
+				Device: pb.CheckLoginStatResponse_PHONE,
+				Uuid:   t.UserUUID.String(),
+			}, nil
+		}
+	}
+
+	return &pb.CheckLoginStatResponse{Token: ""}, nil
 }
