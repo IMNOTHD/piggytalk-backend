@@ -1,7 +1,9 @@
 package server
 
 import (
+	v1 "gateway/api/event/v1"
 	"gateway/internal/conf"
+	eventV1 "gateway/internal/service/event/v1"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/logging"
@@ -10,7 +12,7 @@ import (
 )
 
 // NewGRPCServer new a gRPC server.
-func NewGRPCServer(c *conf.Server, logger log.Logger) *grpc.Server {
+func NewGRPCServer(c *conf.Server, event *eventV1.EventStreamService, logger log.Logger) *grpc.Server {
 	var opts = []grpc.ServerOption{
 		grpc.Middleware(
 			recovery.Recovery(),
@@ -26,6 +28,9 @@ func NewGRPCServer(c *conf.Server, logger log.Logger) *grpc.Server {
 	if c.Grpc.Timeout != nil {
 		opts = append(opts, grpc.Timeout(c.Grpc.Timeout.AsDuration()))
 	}
+
 	srv := grpc.NewServer(opts...)
+	v1.RegisterEventStreamServer(srv, event)
+
 	return srv
 }

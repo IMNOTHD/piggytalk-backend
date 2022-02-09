@@ -1,9 +1,11 @@
 package v1
 
 import (
+	"context"
 	"io"
 
 	pb "gateway/api/event/v1"
+	v1 "gateway/internal/biz/event/v1"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -11,16 +13,19 @@ import (
 type EventStreamService struct {
 	pb.UnimplementedEventStreamServer
 
+	eu  *v1.EventUsecase
 	log *log.Helper
 }
 
-func NewEventStreamService(logger log.Logger) *EventStreamService {
+func NewEventStreamService(eu *v1.EventUsecase, logger log.Logger) *EventStreamService {
 	return &EventStreamService{
+		eu:  eu,
 		log: log.NewHelper(log.With(logger, "module", "gateway/service/event/v1", "caller", log.DefaultCaller)),
 	}
 }
 
 func (s *EventStreamService) EventStream(conn pb.EventStream_EventStreamServer) error {
+	var ctx context.Context
 	for {
 		req, err := conn.Recv()
 		if err == io.EOF {
@@ -34,12 +39,14 @@ func (s *EventStreamService) EventStream(conn pb.EventStream_EventStreamServer) 
 
 		switch req.Event.(type) {
 		case *pb.EventStreamRequest_OnlineRequest:
+			_, err := s.eu.Online(ctx, req.GetOnlineRequest().GetToken())
+			if err != nil {
 
-			break
+			}
 		case *pb.EventStreamRequest_BeatHeartRequest:
-			break
+
 		case *pb.EventStreamRequest_OfflineRequest:
-			break
+
 		}
 
 		//err = conn.Send(&pb.EventStreamResponse{})
