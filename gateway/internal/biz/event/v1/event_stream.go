@@ -2,12 +2,23 @@ package v1
 
 import (
 	"context"
+	"strconv"
+	"time"
+
+	acV1 "gateway/internal/api/account/account/v1"
+	snV1 "gateway/internal/api/snowflake/snowflake/v1"
+	"gateway/internal/conf"
+	"gateway/internal/kit"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
 
 type EventRepo interface {
-	CreateSessionId(ctx context.Context, token string) (SessionId, error)
+	CreateSessionId(ctx context.Context, token string, sid string) (SessionId, error)
+	RemoveSessionId(ctx context.Context, token string, sid string) error
+	SelectToken(ctx context.Context, sessionId string) (string, error)
+	UpdateBeatHeart(ctx context.Context, sessionId string, expiration time.Duration) error
+	SelectBeatHeart(ctx context.Context, sessionId string) (string, error)
 }
 
 type SessionId string
@@ -24,11 +35,84 @@ func NewEventUsecase(repo EventRepo, logger log.Logger) *EventUsecase {
 	}
 }
 
+func (uc *EventUsecase) CheckToken(ctx context.Context, token string) (bool, error) {
+	conn, err := kit.ServiceConn(kit.AccountEndpoint)
+	if err != nil {
+		uc.log.Error(err)
+		return false, err
+	}
+
+	c := acV1.NewAccountClient(conn)
+	ar, err := c.CheckLoginStat(ctx, &acV1.CheckLoginStatRequest{
+		Token: token,
+	})
+	if err != nil {
+		uc.log.Error(err)
+		return false, err
+	}
+
+	if ar.Token != token {
+		uc.log.Infof("token %s check failed", token)
+		return false, nil
+	}
+
+	return true, nil
+}
+
 func (uc *EventUsecase) Online(ctx context.Context, token string) (SessionId, error) {
-	sid, err := uc.repo.CreateSessionId(ctx, token)
+	conn, err := kit.ServiceConn(kit.SnowflakeEndpoint)
+	if err != nil {
+		uc.log.Error(err)
+		return "", err
+	}
+
+	c := snV1.NewSnowflakeClient(conn)
+	sr, err := c.CreateSnowflake(ctx, &snV1.CreateSnowflakeRequest{
+		DataCenterId: 0,
+		WorkerId:     int64(conf.WorkerId),
+	})
+	if err != nil {
+		uc.log.Error(err)
+		return "", err
+	}
+
+	sid := strconv.Itoa(int(sr.GetSnowFlakeId()))
+
+	s, err := uc.repo.CreateSessionId(ctx, token, sid)
 	if err != nil {
 		return "", err
 	}
 
-	return sid, nil
+	return s, nil
+}
+
+func (uc *EventUsecase) BeatHeart(ctx context.Context, sessionId string, expiration time.Duration) error {
+	return uc.repo.UpdateBeatHeart(ctx, sessionId, expiration)
+}
+
+func (uc *EventUsecase) CheckBeatHeart(ctx context.Context, sessionId string, expiration time.Duration) (bool, error) {
+	t, err := uc.repo.SelectBeatHeart(ctx, sessionId)
+	if err != nil {
+		return false, err
+	}
+	if t == "" {
+		return false, nil
+	}
+
+	ts, _ := strconv.ParseInt(t, 10, 64)
+
+	if ts+expiration.Milliseconds() < time.Now().UnixMilli() {
+		return false, nil
+	}
+
+	return true, nil
+}
+
+func (uc *EventUsecase) Offline(ctx context.Context, sessionId string) error {
+	token, err := uc.repo.SelectToken(ctx, sessionId)
+	if err != nil {
+		return err
+	}
+
+	return uc.repo.RemoveSessionId(ctx, token, sessionId)
 }

@@ -2,8 +2,6 @@ syntax = "proto3";
 
 package account.api.account.v1;
 
-import "google/api/annotations.proto";
-
 option go_package = "gateway/internal/api/account/account/v1;v1";
 option java_multiple_files = true;
 option java_package = "api.account.v1";
@@ -11,6 +9,7 @@ option java_package = "api.account.v1";
 service Account {
   rpc Login (LoginRequest) returns (LoginReply);
   rpc Register (RegisterRequest) returns (RegisterReply);
+  rpc CheckLoginStat (CheckLoginStatRequest) returns (CheckLoginStatResponse);
 }
 
 message LoginRequest {
@@ -31,7 +30,7 @@ message LoginReply {
 
 message RegisterRequest {
   string username = 1;
-  // same with login request
+  // same as login request
   string password = 2;
   string email = 3;
   string phone = 4;
@@ -41,4 +40,19 @@ message RegisterRequest {
 
 message RegisterReply {
   string token = 1;
+}
+
+message CheckLoginStatRequest {
+  string token = 1;
+}
+
+message CheckLoginStatResponse {
+  enum Device {
+    WEB = 0;
+    PHONE = 1;
+  }
+  // 校验通过, 返回原token, 失败返回空
+  string token = 1;
+  Device device = 2;
+  string uuid = 3;
 }

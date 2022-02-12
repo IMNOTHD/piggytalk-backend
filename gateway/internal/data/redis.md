@@ -1,6 +1,7 @@
 ##session id
 
-| key                                               | value           |
-|---------------------------------------------------|-----------------|
-| piggytalk:account:sessionId2token:```sessionId``` | ```token```     |
-| piggytalk:account:token2sessionId:```token```     | ```sessionId``` |
+| key                                               | value               |
+|---------------------------------------------------|---------------------|
+| piggytalk:gateway:sessionId2token:```sessionId``` | ```token```         |
+| piggytalk:gateway:token2sessionId:```token```     | ```sessionId```     |
+| piggytalk:gateway:beatheart:```sessionId```       | ```timestamp(ms)``` |

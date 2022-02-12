@@ -7,25 +7,64 @@ option java_multiple_files = true;
 option java_package = "api.event.v1";
 
 service EventStream {
-	rpc EventStream (stream EventStreamRequest) returns (stream EventStreamResponse){};
+  rpc EventStream (stream EventStreamRequest) returns (stream EventStreamResponse){};
 }
 
 message EventStreamRequest {
-	string token = 1;
-	oneof event {
-		OnlineRequest onlineRequest = 2;
-		BeatHeartRequest beatHeartRequest = 3;
-		OfflineRequest offlineRequest = 4;
-	}
+  string token = 1;
+  oneof event {
+    OnlineRequest onlineRequest = 2;
+    BeatHeartRequest beatHeartRequest = 3;
+    OfflineRequest offlineRequest = 4;
+  }
+}
+
+enum Code {
+  // 成功
+  OK = 0;
+  // 被取消
+  CANCELLED = 1;
+  // 未知
+  UNKNOWN = 2;
+  // 无效参数
+  INVALID_ARGUMENT = 3;
+  // 超过最后期限
+  DEADLINE_EXCEEDED = 4;
+  // 无法找到
+  NOT_FOUND = 5;
+  // 已经存在
+  ALREADY_EXISTS = 6;
+  // 权限不足
+  PERMISSION_DENIED = 7;
+  // 资源耗尽
+  RESOURCE_EXHAUSTED = 8;
+  // 前置条件失败
+  FAILED_PRECONDITION = 9;
+  // 中途失败
+  ABORTED = 10;
+  // 超出范围
+  OUT_OF_RANGE = 11;
+  // 未实现
+  UNIMPLEMENTED = 12;
+  // 内部错误
+  INTERNAL = 13;
+  // 不可用
+  UNAVAILABLE = 14;
+  // 数据丢失
+  DATA_LOSS = 15;
+  // 未经认证
+  UNAUTHENTICATED = 16;
 }
 
 message EventStreamResponse {
-	string token = 1;
-	oneof event {
-		OnlineResponse onlineResponse = 2;
-		BeatHeartResponse beatHeartResponse = 3;
-		OfflineResponse offlineResponse = 4;
-	}
+  string token = 1;
+  Code code = 2;
+  string messages = 3;
+  oneof event {
+    OnlineResponse onlineResponse = 4;
+    BeatHeartResponse beatHeartResponse = 5;
+    OfflineResponse offlineResponse = 6;
+  }
 }
 
 // ------------------------------
@@ -33,18 +72,18 @@ message EventStreamResponse {
 
 // 登录后上线request
 message OnlineRequest {
-	string token = 1;
+  string token = 1;
 }
 
-// 心跳request
+// 心跳request, 30s发送一次, 61s未收到心跳则截断连接
 message BeatHeartRequest {
-	string sessionId = 1;
+  string sessionId = 1;
 }
 
 // 下线request
 message OfflineRequest {
-	string token = 1;
-	string sessionId = 2;
+  string token = 1;
+  string sessionId = 2;
 }
 
 // ------------------------------
@@ -52,24 +91,24 @@ message OfflineRequest {
 
 // 登录后上线response
 message OnlineResponse {
-	string sessionId = 1;
+  string sessionId = 1;
 }
 
 
 // 心跳response
 message BeatHeartResponse {
-	enum Flag {
-		// 送达
-		ACK = 0;
-		// sessionId或服务失效, 需要发起online请求
-		FIN = 1;
-		// token失效, 需要重新登录
-		RST = 2;
-	}
-	Flag flag = 1;
+  enum Flag {
+    // 送达
+    ACK = 0;
+    // sessionId或服务失效, 需要发起online请求
+    FIN = 1;
+    // token失效, 需要重新登录
+    RST = 2;
+  }
+  Flag flag = 1;
 }
 
-// 下线response
+// 下线response, 这个response不仅作为request响应, 也作为服务端主动要求下线, 客户端必须处理这个response
 message OfflineResponse {
-	string token = 1;
+  string token = 1;
 }
