@@ -12,6 +12,7 @@ require (
 	github.com/google/wire v0.5.0
 	github.com/gorilla/handlers v1.5.1
 	github.com/hashicorp/consul/api v1.12.0
+	github.com/streadway/amqp v1.0.0
 	github.com/valyala/fasthttp v1.32.0
 	google.golang.org/genproto v0.0.0-20211223182754-3ac035c7e7cb
 	google.golang.org/grpc v1.43.0

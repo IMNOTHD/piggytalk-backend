@@ -1,9 +1,11 @@
 package server
 
 import (
-	v1 "gateway/api/event/v1"
+	eaV1 "gateway/api/event/v1"
+	upV1 "gateway/api/upload/v1"
 	"gateway/internal/conf"
 	eventV1 "gateway/internal/service/event/v1"
+	uploadV1 "gateway/internal/service/upload/v1"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/logging"
@@ -12,7 +14,7 @@ import (
 )
 
 // NewGRPCServer new a gRPC server.
-func NewGRPCServer(c *conf.Server, event *eventV1.EventStreamService, logger log.Logger) *grpc.Server {
+func NewGRPCServer(c *conf.Server, eventV1 *eventV1.EventStreamService, uploadV1 *uploadV1.UploadService, logger log.Logger) *grpc.Server {
 	var opts = []grpc.ServerOption{
 		grpc.Middleware(
 			recovery.Recovery(),
@@ -30,7 +32,8 @@ func NewGRPCServer(c *conf.Server, event *eventV1.EventStreamService, logger log
 	}
 
 	srv := grpc.NewServer(opts...)
-	v1.RegisterEventStreamServer(srv, event)
+	eaV1.RegisterEventStreamServer(srv, eventV1)
+	upV1.RegisterUploadServer(srv, uploadV1)
 
 	return srv
 }

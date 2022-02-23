@@ -33,7 +33,7 @@ func (s *AccountService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.L
 	err := s.verifyReCaptchaToken(req.ReCaptchaToken)
 	if err != nil {
 		s.log.Error(err)
-		return nil, err
+		return nil, errorCheck(err)
 	}
 
 	a, t, err := s.au.Login(ctx, &v1.Account{
@@ -42,7 +42,7 @@ func (s *AccountService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.L
 	})
 	if err != nil {
 		s.log.Error(err)
-		return nil, err
+		return nil, errorCheck(err)
 	}
 
 	if tr, ok := transport.FromServerContext(ctx); ok {
@@ -62,7 +62,7 @@ func (s *AccountService) Register(ctx context.Context, req *pb.RegisterRequest) 
 	err := s.verifyReCaptchaToken(req.ReCaptchaToken)
 	if err != nil {
 		s.log.Error(err)
-		return nil, err
+		return nil, errorCheck(err)
 	}
 
 	t, err := s.au.Register(ctx, &v1.Account{
@@ -75,7 +75,7 @@ func (s *AccountService) Register(ctx context.Context, req *pb.RegisterRequest) 
 	})
 	if err != nil {
 		s.log.Error(err)
-		return nil, err
+		return nil, errorCheck(err)
 	}
 
 	if tr, ok := transport.FromServerContext(ctx); ok {
@@ -83,6 +83,15 @@ func (s *AccountService) Register(ctx context.Context, req *pb.RegisterRequest) 
 	}
 
 	return &pb.RegisterReply{Token: string(t)}, nil
+}
+
+// 拦截错误, 防止把内部错误带出去
+func errorCheck(err error) error {
+	e := errors.FromError(err)
+	if e.GetCode() < 400 || e.Code >= 500 {
+		return errors.New(500, "SERVICE_ERROR", "服务错误")
+	}
+	return err
 }
 
 type RecaptchaResponse struct {

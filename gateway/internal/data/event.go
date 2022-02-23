@@ -28,7 +28,7 @@ func (r *eventRepo) CreateSessionId(ctx context.Context, token string, sid strin
 	buffer.WriteString("piggytalk:gateway:sessionId2token:")
 	buffer.WriteString(sid)
 
-	x := r.data.Rdb.SAdd(ctx, buffer.String(), token)
+	x := r.data.Rdb.Set(ctx, buffer.String(), token, 0)
 	if x.Err() != nil {
 		r.log.Error(x.Err())
 		return "", x.Err()
@@ -37,7 +37,7 @@ func (r *eventRepo) CreateSessionId(ctx context.Context, token string, sid strin
 	buffer.Reset()
 	buffer.WriteString("piggytalk:gateway:token2sessionId:")
 	buffer.WriteString(token)
-	x = r.data.Rdb.SAdd(ctx, buffer.String(), sid)
+	x = r.data.Rdb.Set(ctx, buffer.String(), sid, 0)
 	if x.Err() != nil {
 		r.log.Error(x.Err())
 		return "", x.Err()

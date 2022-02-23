@@ -48,11 +48,11 @@ enum Code {
   UNIMPLEMENTED = 12;
   // 内部错误
   INTERNAL = 13;
-  // 不可用
+  // 不可用 -> 内部错误
   UNAVAILABLE = 14;
   // 数据丢失
   DATA_LOSS = 15;
-  // 未经认证
+  // 未经认证 -> 登录失效
   UNAUTHENTICATED = 16;
 }
 

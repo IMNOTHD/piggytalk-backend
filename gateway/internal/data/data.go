@@ -8,14 +8,21 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-redis/redis/v8"
 	"github.com/google/wire"
+	"github.com/streadway/amqp"
 )
 
 // ProviderSet is data providers.
 var ProviderSet = wire.NewSet(NewData, NewEventRepo)
 
+type RabbitMQ struct {
+	Conn    *amqp.Connection
+	Channel *amqp.Channel
+}
+
 // Data .
 type Data struct {
 	Rdb *redis.Client
+	Rmq *RabbitMQ
 	log *log.Helper
 }
 
@@ -35,15 +42,35 @@ func NewData(conf *conf.Data, logger log.Logger) (*Data, func(), error) {
 		return nil, nil, err
 	}
 
+	conn, err := amqp.Dial("amqp://" + conf.Rabbitmq.GetUser() +
+		":" + conf.Rabbitmq.GetPassword() +
+		"@" + conf.Rabbitmq.GetAddr())
+	if err != nil {
+		l.Errorf("rabbitmq connection error: %v", err)
+		return nil, nil, err
+	}
+	channel, err := conn.Channel()
+	if err != nil {
+		l.Errorf("rabbitmq new channel error: %v", err)
+		return nil, nil, err
+	}
+
 	cleanup := func() {
 		l.Infof("closing the data resources")
 		if err := rdb.Close(); err != nil {
+			l.Error(err)
+		}
+		if err := conn.Close(); err != nil {
 			l.Error(err)
 		}
 	}
 
 	return &Data{
 		Rdb: rdb,
+		Rmq: &RabbitMQ{
+			Conn:    conn,
+			Channel: channel,
+		},
 		log: l,
 	}, cleanup, nil
 }

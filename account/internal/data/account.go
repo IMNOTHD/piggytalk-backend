@@ -175,7 +175,7 @@ func (r *accountRepo) CreateUserLoginToken(ctx context.Context, t *v1.TokenInfo)
 	buffer.WriteString(":")
 	buffer.WriteString(t.Device)
 
-	x := r.data.Rdb.SAdd(ctx, buffer.String(), t.Token)
+	x := r.data.Rdb.Set(ctx, buffer.String(), t.Token, 0)
 	if x.Err() != nil {
 		r.log.Error(x.Err())
 		return nil, x.Err()
@@ -186,7 +186,7 @@ func (r *accountRepo) CreateUserLoginToken(ctx context.Context, t *v1.TokenInfo)
 	buffer.WriteString(string(t.Device))
 	buffer.WriteString(":")
 	buffer.WriteString(t.Token)
-	x = r.data.Rdb.SAdd(ctx, buffer.String(), t.UserUUID.String())
+	x = r.data.Rdb.Set(ctx, buffer.String(), t.UserUUID.String(), 0)
 	if x.Err() != nil {
 		r.log.Error(x.Err())
 		return nil, x.Err()

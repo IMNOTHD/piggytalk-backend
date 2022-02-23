@@ -38,11 +38,11 @@ const (
 )
 
 func (s *EventStreamService) EventStream(conn pb.EventStream_EventStreamServer) error {
-	var ctx context.Context
 	var wg sync.WaitGroup
 	var e error
 	var exit = false
 	var sessionId string = ""
+	ctx := context.Background()
 
 	ch := make(chan pb.EventStreamRequest, _commodityLoad)
 	beatStartCh := make(chan bool)
@@ -112,7 +112,7 @@ func (s *EventStreamService) EventStream(conn pb.EventStream_EventStreamServer) 
 						s.log.Error(err)
 						err = conn.Send(&pb.EventStreamResponse{
 							Token:    req.GetToken(),
-							Code:     pb.Code_ABORTED,
+							Code:     pb.Code_UNAVAILABLE,
 							Messages: "心跳错误",
 							Event: &pb.EventStreamResponse_BeatHeartResponse{
 								BeatHeartResponse: &pb.BeatHeartResponse{Flag: pb.BeatHeartResponse_FIN},
@@ -216,7 +216,7 @@ func (s *EventStreamService) EventStream(conn pb.EventStream_EventStreamServer) 
 		if f == false {
 			err = conn.Send(&pb.EventStreamResponse{
 				Token:    req.GetToken(),
-				Code:     pb.Code_OK,
+				Code:     pb.Code_UNAUTHENTICATED,
 				Messages: "登录失效，请重新登录",
 				Event: &pb.EventStreamResponse_OfflineResponse{
 					OfflineResponse: &pb.OfflineResponse{Token: req.GetToken()}},

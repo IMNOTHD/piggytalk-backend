@@ -15,6 +15,7 @@ import (
 	"gateway/internal/service"
 	v1_2 "gateway/internal/service/account/v1"
 	v1_4 "gateway/internal/service/event/v1"
+	v1_5 "gateway/internal/service/upload/v1"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -34,7 +35,8 @@ func initApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*
 	eventRepo := data.NewEventRepo(dataData, logger)
 	eventUsecase := v1_3.NewEventUsecase(eventRepo, logger)
 	eventStreamService := v1_4.NewEventStreamService(eventUsecase, logger)
-	grpcServer := server.NewGRPCServer(confServer, eventStreamService, logger)
+	uploadService := v1_5.NewUploadService(logger)
+	grpcServer := server.NewGRPCServer(confServer, eventStreamService, uploadService, logger)
 	app := newApp(logger, httpServer, grpcServer)
 	return app, func() {
 		cleanup()
