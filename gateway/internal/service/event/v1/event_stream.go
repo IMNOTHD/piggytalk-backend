@@ -74,6 +74,7 @@ func (s *EventStreamService) EventStream(conn pb.EventStream_EventStreamServer) 
 				case *pb.EventStreamRequest_OnlineRequest:
 					sid, err := s.eu.Online(ctx, req.GetOnlineRequest().GetToken())
 					if err != nil {
+						e = err
 						err := conn.Send(&pb.EventStreamResponse{
 							Token:    req.GetToken(),
 							Code:     pb.Code_ABORTED,
@@ -81,10 +82,10 @@ func (s *EventStreamService) EventStream(conn pb.EventStream_EventStreamServer) 
 						})
 						if err != nil {
 							s.log.Error(err)
-							e = err
-							// 认证出错, 该连接无存在必要, 断开
-							exit = true
 						}
+						// 认证出错, 该连接无存在必要, 断开
+						exit = true
+						break
 					}
 
 					err = conn.Send(&pb.EventStreamResponse{
