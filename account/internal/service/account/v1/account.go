@@ -18,7 +18,10 @@ type AccountService struct {
 }
 
 func NewAccountService(au *v1.AccountUsecase, logger log.Logger) *AccountService {
-	return &AccountService{au: au, log: log.NewHelper(log.With(logger, "module", "account/service/account/v1", "caller", log.DefaultCaller))}
+	return &AccountService{
+		au:  au,
+		log: log.NewHelper(log.With(logger, "module", "account/service/account/v1", "caller", log.DefaultCaller)),
+	}
 }
 
 func (s *AccountService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginReply, error) {

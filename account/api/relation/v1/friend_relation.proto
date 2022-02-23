@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package account.api.relation.v1;
+
+option go_package = "account/api/relation/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.relation.v1";
+
+service FriendRelation {
+  rpc CreateFriendRelation (CreateFriendRelationRequest) returns (CreateFriendRelationReply);
+  // 双向删除
+  rpc DeleteFriendRelation (DeleteFriendRelationRequest) returns (DeleteFriendRelationReply);
+  rpc ListFriendRelation (ListFriendRelationRequest) returns (ListFriendRelationReply);
+}
+
+message CreateFriendRelationRequest {
+  string userAUUID = 1;
+  string userBUUiD = 2;
+}
+message CreateFriendRelationReply {
+  bool success = 1;
+}
+
+message DeleteFriendRelationRequest {
+  string userAUUID = 1;
+  string userBUUiD = 2;
+}
+message DeleteFriendRelationReply {
+  bool success = 1;
+}
+
+message ListFriendRelationRequest {
+	string userUUID = 1;
+}
+message ListFriendRelationReply {
+	repeated string friendUUID = 1;
+}

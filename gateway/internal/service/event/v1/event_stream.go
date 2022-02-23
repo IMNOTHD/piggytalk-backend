@@ -42,7 +42,12 @@ func (s *EventStreamService) EventStream(conn pb.EventStream_EventStreamServer) 
 	var e error
 	var exit = false
 	var sessionId string = ""
+	uid := ""
 	ctx := context.Background()
+
+	// TODO remove this if
+	if uid != "" {
+	}
 
 	ch := make(chan pb.EventStreamRequest, _commodityLoad)
 	beatStartCh := make(chan bool)
@@ -207,7 +212,7 @@ func (s *EventStreamService) EventStream(conn pb.EventStream_EventStreamServer) 
 			continue
 		}
 
-		f, err := s.eu.CheckToken(ctx, req.GetToken())
+		f, u, err := s.eu.CheckToken(ctx, req.GetToken())
 		if err != nil {
 			s.log.Error(err)
 			e = err
@@ -228,6 +233,7 @@ func (s *EventStreamService) EventStream(conn pb.EventStream_EventStreamServer) 
 			exit = true
 			continue
 		}
+		uid = u
 
 		ch <- *req
 	}

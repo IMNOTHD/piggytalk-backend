@@ -14,7 +14,7 @@ import (
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewAccountRepo)
+var ProviderSet = wire.NewSet(NewData, NewAccountRepo, NewFriendRelationRepo)
 
 // Data .
 type Data struct {
@@ -42,6 +42,13 @@ func NewData(conf *conf.Data, logger log.Logger) (*Data, func(), error) {
 	}
 	if !db.Migrator().HasTable(&UserInfo{}) {
 		err = db.Migrator().CreateTable(&UserInfo{})
+	}
+	if err != nil {
+		l.Error(err)
+		return nil, nil, err
+	}
+	if !db.Migrator().HasTable(&FriendRelation{}) {
+		err = db.Migrator().CreateTable(&FriendRelation{})
 	}
 	if err != nil {
 		l.Error(err)

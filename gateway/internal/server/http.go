@@ -4,9 +4,7 @@ import (
 	httpNet "net/http"
 
 	v12 "gateway/api/account/v1"
-	v2 "gateway/api/test"
 	"gateway/internal/conf"
-	"gateway/internal/service"
 	v1 "gateway/internal/service/account/v1"
 
 	"github.com/go-kratos/kratos/v2/encoding"
@@ -18,7 +16,7 @@ import (
 )
 
 // NewHTTPServer new a HTTP server.
-func NewHTTPServer(c *conf.Server, test *service.TestService, account *v1.AccountService, logger log.Logger) *http.Server {
+func NewHTTPServer(c *conf.Server, account *v1.AccountService, logger log.Logger) *http.Server {
 	var opts = []http.ServerOption{
 		http.Middleware(
 			recovery.Recovery(),
@@ -64,7 +62,6 @@ func NewHTTPServer(c *conf.Server, test *service.TestService, account *v1.Accoun
 
 	srv := http.NewServer(opts...)
 
-	v2.RegisterTestHTTPServer(srv, test)
 	v12.RegisterAccountHTTPServer(srv, account)
 	return srv
 }

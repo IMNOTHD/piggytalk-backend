@@ -8,10 +8,12 @@ package main
 
 import (
 	"account/internal/biz/account/v1"
+	v1_2 "account/internal/biz/relation/v1"
 	"account/internal/conf"
 	"account/internal/data"
 	"account/internal/server"
 	"account/internal/service/account/v1"
+	service2 "account/internal/service/relation/v1"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -27,7 +29,10 @@ func initApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*
 	accountRepo := data.NewAccountRepo(dataData, logger)
 	accountUsecase := v1.NewAccountUsecase(accountRepo, logger)
 	accountService := service.NewAccountService(accountUsecase, logger)
-	grpcServer := server.NewGRPCServer(confServer, accountService, logger)
+	friendRelationRepo := data.NewFriendRelationRepo(dataData, logger)
+	friendRelationUsecase := v1_2.NewFriendRelationUsecase(friendRelationRepo, logger)
+	friendRelationService := service2.NewFriendRelationService(friendRelationUsecase, logger)
+	grpcServer := server.NewGRPCServer(confServer, accountService, friendRelationService, logger)
 	app := newApp(logger, grpcServer)
 	return app, func() {
 		cleanup()

@@ -265,8 +265,8 @@ func (r *accountRepo) CreateUser(ctx context.Context, a *v1.Account) (*uuid.UUID
 		Phone:    a.Phone,
 	})
 	if ru.Error != nil {
-		r.log.Error(err)
-		return nil, err
+		r.log.Error(ru.Error)
+		return nil, ru.Error
 	}
 	r.log.Infof("success create userInfo, id %d", ui.ID)
 

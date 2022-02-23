@@ -2,8 +2,10 @@ package server
 
 import (
 	accountV1 "account/api/account/v1"
+	relationV1 "account/api/relation/v1"
 	"account/internal/conf"
-	service "account/internal/service/account/v1"
+	accountV1Service "account/internal/service/account/v1"
+	relationV1Service "account/internal/service/relation/v1"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/logging"
@@ -12,7 +14,7 @@ import (
 )
 
 // NewGRPCServer new a gRPC server.
-func NewGRPCServer(c *conf.Server, account *service.AccountService, logger log.Logger) *grpc.Server {
+func NewGRPCServer(c *conf.Server, account *accountV1Service.AccountService, friend *relationV1Service.FriendRelationService, logger log.Logger) *grpc.Server {
 	var opts = []grpc.ServerOption{
 		grpc.Middleware(
 			recovery.Recovery(),
@@ -30,5 +32,7 @@ func NewGRPCServer(c *conf.Server, account *service.AccountService, logger log.L
 	}
 	srv := grpc.NewServer(opts...)
 	accountV1.RegisterAccountServer(srv, account)
+	relationV1.RegisterFriendRelationServer(srv, friend)
+
 	return srv
 }

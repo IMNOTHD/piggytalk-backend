@@ -20,4 +20,5 @@
 |-----------|-----------|-----------|-----------------------------|
 | snowflake | *none*    | 9000      | piggytalk-backend-snowflake |
 | account   | *none*    | 9001      | piggytalk-backend-account   |
+| message   | *none*    | 9002      | piggytalk-backend-message   |
 | gateway   | 8080      | 9090      | *none*                      |

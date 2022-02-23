@@ -35,11 +35,11 @@ func NewEventUsecase(repo EventRepo, logger log.Logger) *EventUsecase {
 	}
 }
 
-func (uc *EventUsecase) CheckToken(ctx context.Context, token string) (bool, error) {
+func (uc *EventUsecase) CheckToken(ctx context.Context, token string) (bool, string, error) {
 	conn, err := kit.ServiceConn(kit.AccountEndpoint)
 	if err != nil {
 		uc.log.Error(err)
-		return false, err
+		return false, "", err
 	}
 
 	c := acV1.NewAccountClient(conn)
@@ -48,15 +48,15 @@ func (uc *EventUsecase) CheckToken(ctx context.Context, token string) (bool, err
 	})
 	if err != nil {
 		uc.log.Error(err)
-		return false, err
+		return false, "", err
 	}
 
 	if ar.Token != token {
 		uc.log.Infof("token %s check failed", token)
-		return false, nil
+		return false, "", nil
 	}
 
-	return true, nil
+	return true, ar.GetUuid(), nil
 }
 
 func (uc *EventUsecase) Online(ctx context.Context, token string) (SessionId, error) {

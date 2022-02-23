@@ -12,7 +12,6 @@ import (
 	"gateway/internal/conf"
 	"gateway/internal/data"
 	"gateway/internal/server"
-	"gateway/internal/service"
 	v1_2 "gateway/internal/service/account/v1"
 	v1_4 "gateway/internal/service/event/v1"
 	v1_5 "gateway/internal/service/upload/v1"
@@ -24,10 +23,9 @@ import (
 
 // initApp init kratos application.
 func initApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*kratos.App, func(), error) {
-	testService := service.NewTestService(logger)
 	accountUsecase := v1.NewAccountUsecase(logger)
 	accountService := v1_2.NewAccountService(accountUsecase, logger)
-	httpServer := server.NewHTTPServer(confServer, testService, accountService, logger)
+	httpServer := server.NewHTTPServer(confServer, accountService, logger)
 	dataData, cleanup, err := data.NewData(confData, logger)
 	if err != nil {
 		return nil, nil, err
