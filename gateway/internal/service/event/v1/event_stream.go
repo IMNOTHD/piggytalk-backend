@@ -10,6 +10,7 @@ import (
 	v1 "gateway/internal/biz/event/v1"
 
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/google/uuid"
 )
 
 type EventStreamService struct {
@@ -17,6 +18,15 @@ type EventStreamService struct {
 
 	eu  *v1.EventUsecase
 	log *log.Helper
+}
+
+type lastMessage struct {
+	MessageUuid uuid.UUID
+	SendTime    int64
+}
+type lastEvent struct {
+	EventUuid uuid.UUID
+	SendTime  int64
 }
 
 func NewEventStreamService(eu *v1.EventUsecase, logger log.Logger) *EventStreamService {
@@ -44,9 +54,13 @@ func (s *EventStreamService) EventStream(conn pb.EventStream_EventStreamServer) 
 	var sessionId string = ""
 	uid := ""
 	ctx := context.Background()
-
-	// TODO remove this if
-	if uid != "" {
+	//lm := lastMessage{
+	//	MessageUuid: uuid.UUID{},
+	//	SendTime:    0,
+	//}
+	le := lastEvent{
+		EventUuid: uuid.UUID{},
+		SendTime:  0,
 	}
 
 	ch := make(chan pb.EventStreamRequest, _commodityLoad)
@@ -70,9 +84,10 @@ func (s *EventStreamService) EventStream(conn pb.EventStream_EventStreamServer) 
 				if !ok {
 					return
 				}
+
 				switch req.Event.(type) {
 				case *pb.EventStreamRequest_OnlineRequest:
-					sid, err := s.eu.Online(ctx, req.GetOnlineRequest().GetToken())
+					sid, err := s.eu.Online(ctx, req.GetOnlineRequest().GetToken(), uid)
 					if err != nil {
 						e = err
 						err := conn.Send(&pb.EventStreamResponse{
@@ -113,6 +128,10 @@ func (s *EventStreamService) EventStream(conn pb.EventStream_EventStreamServer) 
 					// 开始计算心跳
 					beatStartCh <- true
 				case *pb.EventStreamRequest_BeatHeartRequest:
+					if uid == "" {
+						continue
+					}
+
 					err := s.eu.BeatHeart(ctx, req.GetBeatHeartRequest().GetSessionId(), _beatHeartExpiration)
 					if err != nil {
 						s.log.Error(err)
@@ -141,12 +160,51 @@ func (s *EventStreamService) EventStream(conn pb.EventStream_EventStreamServer) 
 						s.log.Error(err)
 					}
 				case *pb.EventStreamRequest_OfflineRequest:
+					if uid == "" {
+						continue
+					}
+
 					err := s.eu.Offline(ctx, sessionId)
 					if err != nil {
 						s.log.Error(err)
 					}
 
 					exit = true
+				case *pb.EventStreamRequest_AddFriendRequest:
+					if uid == "" {
+						continue
+					}
+
+					k := lastEvent{EventUuid: uuid.MustParse(req.GetAddFriendRequest().GetEventUuid()), SendTime: req.GetAddFriendRequest().GetSendTime()}
+					if k == le {
+						continue
+					}
+
+					eid, err := s.eu.AddFriendRequest(ctx, uuid.MustParse(req.GetAddFriendRequest().GetReceiverUuid()), req.GetAddFriendRequest().GetNote(), uid)
+					if err != nil {
+						s.log.Error(err)
+						err = conn.Send(&pb.EventStreamResponse{
+							Token:    req.GetToken(),
+							Code:     pb.Code_UNAVAILABLE,
+							Messages: "服务错误",
+							Event:    &pb.EventStreamResponse_AddFriendResponse{},
+						})
+						if err != nil {
+							s.log.Error(err)
+						}
+					}
+
+					err = conn.Send(&pb.EventStreamResponse{
+						Token:    req.GetToken(),
+						Code:     pb.Code_OK,
+						Messages: "",
+						Event: &pb.EventStreamResponse_AddFriendResponse{
+							AddFriendResponse: &pb.AddFriendResponse{
+								EventUuid: req.GetAddFriendRequest().GetEventUuid(),
+								EventId:   eid,
+							},
+						},
+					})
 				}
 			}
 

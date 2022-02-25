@@ -6,6 +6,8 @@ option go_package = "gateway/api/event/v1;v1";
 option java_multiple_files = true;
 option java_package = "api.event.v1";
 
+// 任何带Notify前缀的message, 均为服务端先发
+
 service EventStream {
   rpc EventStream (stream EventStreamRequest) returns (stream EventStreamResponse){};
 }
@@ -16,8 +18,133 @@ message EventStreamRequest {
     OnlineRequest onlineRequest = 2;
     BeatHeartRequest beatHeartRequest = 3;
     OfflineRequest offlineRequest = 4;
+    AddFriendRequest addFriendRequest = 5;
+    ConfirmFriendRequest confirmFriendRequest = 6;
+    NotifyReceiveAddFriendRequest notifyReceiveAddFriendRequest = 7;
   }
 }
+
+message EventStreamResponse {
+  string token = 1;
+  Code code = 2;
+  string messages = 3;
+  oneof event {
+    OnlineResponse onlineResponse = 4;
+    BeatHeartResponse beatHeartResponse = 5;
+    OfflineResponse offlineResponse = 6;
+    AddFriendResponse addFriendResponse = 7;
+    ConfirmFriendResponse confirmFriendResponse = 8;
+    NotifyReceiveAddFriendResponse notifyReceiveAddFriendResponse = 9;
+  }
+}
+
+// ------------------------------
+// 以下为客户端发起的request event
+
+// 登录后上线request
+message OnlineRequest {
+  string token = 1;
+}
+
+// 心跳request, 30s发送一次, 61s未收到心跳则截断连接
+message BeatHeartRequest {
+  string sessionId = 1;
+}
+
+// 下线request
+message OfflineRequest {
+  string token = 1;
+  string sessionId = 2;
+}
+
+//// 单聊
+//message SingleMessageRequest {
+//  string message = 1;
+//  string messageUuid = 2;
+//  // 接收者uuid
+//  string receiverUuid = 3;
+//  // 发送者毫秒时间戳, 如与上一条信息完全相同且时差在50ms内, 抛弃, 送达时间以服务器时间为准
+//  int64 sendTime = 4;
+//}
+
+// 添加好友请求
+message AddFriendRequest {
+  string receiverUuid = 1;
+  // 备注
+  string note = 2;
+  // 客户端生成, 不作为标识使用, 仅去重
+  string eventUuid = 3;
+  // 发送者毫秒时间戳, 如与上一条信息完全相同且时差在50ms内, 抛弃, 送达时间以服务器时间为准
+  int64 sendTime = 4;
+}
+
+message ConfirmFriendRequest {
+  AddStatCode addStatCode = 1;
+  // 客户端生成, 不作为标识使用, 仅去重
+  string eventUuid = 2;
+  // 发送者毫秒时间戳, 如与上一条信息完全相同且时差在50ms内, 抛弃, 送达时间以服务器时间为准
+  int64 sendTime = 3;
+}
+
+// 通知收到添加好友请求, 该条仅ack用
+message NotifyReceiveAddFriendRequest {
+  int64 eventId = 1;
+}
+
+// ------------------------------
+// 以下为服务端发起的response event
+
+// 登录后上线response
+message OnlineResponse {
+  string sessionId = 1;
+}
+
+
+// 心跳response
+message BeatHeartResponse {
+  enum Flag {
+    // 送达
+    ACK = 0;
+    // sessionId或服务失效, 需要发起online请求
+    FIN = 1;
+    // token失效, 需要重新登录
+    RST = 2;
+  }
+  Flag flag = 1;
+}
+
+// 下线response, 这个response不仅作为request响应, 也作为服务端主动要求下线, 客户端必须处理这个response
+message OfflineResponse {
+  string token = 1;
+}
+
+//message SingleMessageResponse {
+//  // snowflakeId
+//  int64 messageId = 1;
+//  string messageUuid = 2;
+//}
+
+message AddFriendResponse {
+  string eventUuid = 1;
+  // 服务端返回
+  int64 eventId = 2;
+}
+
+message ConfirmFriendResponse {
+  int64 eventId = 1;
+  // 客户端生成, 不作为标识使用, 仅去重
+  string eventUuid = 3;
+}
+
+// 通知收到添加好友请求, 服务端先发
+message NotifyReceiveAddFriendResponse {
+  int64 eventId = 1;
+  string requestUuid = 2;
+  string note = 3;
+}
+
+// ------------------------------
+// 通用enum
 
 enum Code {
   // 成功
@@ -56,59 +183,11 @@ enum Code {
   UNAUTHENTICATED = 16;
 }
 
-message EventStreamResponse {
-  string token = 1;
-  Code code = 2;
-  string messages = 3;
-  oneof event {
-    OnlineResponse onlineResponse = 4;
-    BeatHeartResponse beatHeartResponse = 5;
-    OfflineResponse offlineResponse = 6;
-  }
-}
-
-// ------------------------------
-// 以下为客户端发起的request event
-
-// 登录后上线request
-message OnlineRequest {
-  string token = 1;
-}
-
-// 心跳request, 30s发送一次, 61s未收到心跳则截断连接
-message BeatHeartRequest {
-  string sessionId = 1;
-}
-
-// 下线request
-message OfflineRequest {
-  string token = 1;
-  string sessionId = 2;
-}
-
-// ------------------------------
-// 以下为服务端发起的request event
-
-// 登录后上线response
-message OnlineResponse {
-  string sessionId = 1;
-}
-
-
-// 心跳response
-message BeatHeartResponse {
-  enum Flag {
-    // 送达
-    ACK = 0;
-    // sessionId或服务失效, 需要发起online请求
-    FIN = 1;
-    // token失效, 需要重新登录
-    RST = 2;
-  }
-  Flag flag = 1;
-}
-
-// 下线response, 这个response不仅作为request响应, 也作为服务端主动要求下线, 客户端必须处理这个response
-message OfflineResponse {
-  string token = 1;
+enum AddStatCode {
+  // 等待回复, 回复请求时若为WAITING, 服务端将会忽略
+  WAITING = 0;
+  // 通过
+  SUCCESS = 1;
+  // 拒绝
+  DENIED = 2;
 }
