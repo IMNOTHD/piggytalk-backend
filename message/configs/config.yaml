@@ -13,3 +13,8 @@ data:
     addr: 127.0.0.1:5672/
     user: piggytalk-backend
     password: impiggy
+  redis:
+    addr: 127.0.0.1:6379
+    db: 1
+    read_timeout: 0.2s
+    write_timeout: 0.2s

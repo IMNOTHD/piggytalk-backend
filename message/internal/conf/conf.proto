@@ -37,6 +37,14 @@ message Data {
     string user = 2;
     string password = 3;
   }
+  message Redis {
+    string network = 1;
+    string addr = 2;
+    int64 db = 3;
+    google.protobuf.Duration read_timeout = 4;
+    google.protobuf.Duration write_timeout = 5;
+  }
   Database database = 1;
   RabbitMQ rabbitmq = 2;
+  Redis redis = 3;
 }
