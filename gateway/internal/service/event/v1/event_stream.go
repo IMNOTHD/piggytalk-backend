@@ -30,10 +30,14 @@ type lastEvent struct {
 }
 
 func NewEventStreamService(eu *v1.EventUsecase, logger log.Logger) *EventStreamService {
-	return &EventStreamService{
+	service := &EventStreamService{
 		eu:  eu,
 		log: log.NewHelper(log.With(logger, "module", "gateway/service/event/v1", "caller", log.DefaultCaller)),
 	}
+
+	go service.rabbitmqListener()
+
+	return service
 }
 
 const (
@@ -46,6 +50,12 @@ const (
 	// 心跳有效期
 	_beatHeartExpiration = time.Second * 60
 )
+
+func (s *EventStreamService) rabbitmqListener() {
+	m, e := s.eu.RabbitMqListener(context.Background())
+	go m()
+	go e()
+}
 
 func (s *EventStreamService) EventStream(conn pb.EventStream_EventStreamServer) error {
 	var wg sync.WaitGroup

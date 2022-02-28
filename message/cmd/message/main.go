@@ -63,6 +63,7 @@ func newApp(logger log.Logger, gs *grpc.Server) *kratos.App {
 
 func main() {
 	fluentdService := ServiceDiscover("fluentd1")
+
 	logger, err := fluent.NewLogger(
 		fmt.Sprintf("tcp://%s:%d", "127.0.0.1", fluentdService.Port),
 		fluent.WithTagPrefix(Name))
@@ -103,8 +104,17 @@ func main() {
 
 // ServiceDiscover 服务发现，获取指定id的服务
 func ServiceDiscover(serviceID string) *api.AgentService {
+
+	// 创建Consul客户端连接
+	consulConfig := api.DefaultConfig()
+	consulConfig.Address = "127.0.0.1:8500"
+	client, err := api.NewClient(consulConfig)
+	if err != nil {
+		panic(err)
+	}
+
 	// 获取指定service
-	service, _, err := ConsulClient.Agent().Service(serviceID, nil)
+	service, _, err := client.Agent().Service(serviceID, nil)
 	if err != nil {
 		panic(err)
 	}

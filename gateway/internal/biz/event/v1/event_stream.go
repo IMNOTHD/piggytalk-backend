@@ -15,6 +15,7 @@ import (
 )
 
 type EventRepo interface {
+	RabbitMqLister(ctx context.Context) (func(), func())
 	SendAddFriend(ctx context.Context, sid int64, receiverUuid string, note string, uid string) error
 	CreateSessionId(ctx context.Context, token string, sid string, uid string) (SessionId, error)
 	RemoveSessionId(ctx context.Context, token string, sid string) error
@@ -36,6 +37,10 @@ func NewEventUsecase(repo EventRepo, logger log.Logger) *EventUsecase {
 		repo: repo,
 		log:  log.NewHelper(log.With(logger, "module", "gateway/biz/event/v1", "caller", log.DefaultCaller)),
 	}
+}
+
+func (uc *EventUsecase) RabbitMqListener(ctx context.Context) (func(), func()) {
+	return uc.repo.RabbitMqLister(ctx)
 }
 
 func (uc *EventUsecase) AddFriendRequest(ctx context.Context, receiverUuid uuid.UUID, note string, uid string) (int64, error) {

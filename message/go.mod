@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/go-kratos/consul v0.1.5
 	github.com/go-kratos/kratos/contrib/log/fluent/v2 v2.0.0-20220223064039-24393ee655f4
-	github.com/go-kratos/kratos/v2 v2.1.5
+	github.com/go-kratos/kratos/v2 v2.2.0
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/golang/protobuf v1.5.2

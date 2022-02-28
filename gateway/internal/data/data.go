@@ -165,7 +165,7 @@ func NewData(conf *con.Data, logger log.Logger) (*Data, func(), error) {
 	messageSessionProps["x-dead-letter-exchange"] = _messageDeadTopicEx
 	// message 本机session接收队列与绑定
 	_, err = channel.QueueDeclare(
-		eventSessionQueue,
+		messageSessionQueue,
 		false,
 		true,
 		false,
@@ -295,27 +295,6 @@ func NewData(conf *con.Data, logger log.Logger) (*Data, func(), error) {
 		l.Errorf("rabbitmq bind session event queue error: %v", err)
 		return nil, nil, err
 	}
-
-	// 消费event session消息
-	go func() {
-		msg, err := channel.Consume(
-			eventSessionQueue,
-			con.ID.String(),
-			true,
-			false,
-			false,
-			false,
-			nil,
-		)
-
-		if err != nil {
-			l.Errorf("Fail to register consumer: %v", err)
-		}
-
-		for m := range msg {
-			l.Infof("type: %s\nbody: %s", m.Type, m.Body)
-		}
-	}()
 
 	cleanup := func() {
 		l.Infof("closing the data resources")

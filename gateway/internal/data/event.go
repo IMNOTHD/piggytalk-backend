@@ -8,6 +8,7 @@ import (
 	"time"
 
 	v1 "gateway/internal/biz/event/v1"
+	con "gateway/internal/conf"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-redis/redis/v8"
@@ -24,6 +25,54 @@ func NewEventRepo(data *Data, logger log.Logger) v1.EventRepo {
 		data: data,
 		log:  log.NewHelper(log.With(logger, "module", "gateway/data/event", "caller", log.DefaultCaller)),
 	}
+}
+
+func (r *eventRepo) RabbitMqLister(ctx context.Context) (func(), func()) {
+	eventSessionQueue := strconv.Itoa(int(con.WorkerId)) + _eventMQSuffix
+	messageSessionQueue := strconv.Itoa(int(con.WorkerId)) + _messageMQSuffix
+
+	// message session消息
+	messageListener := func() {
+		msg, err := r.data.Rmq.Channel.Consume(
+			messageSessionQueue,
+			con.ID.String(),
+			true,
+			false,
+			false,
+			false,
+			nil,
+		)
+
+		if err != nil {
+			r.log.Errorf("Fail to register message consumer: %v", err)
+		}
+
+		for m := range msg {
+			r.log.Infof("type: %s\nbody: %s", m.Type, m.Body)
+		}
+	}
+	// 消费event session消息
+	eventListener := func() {
+		msg, err := r.data.Rmq.Channel.Consume(
+			eventSessionQueue,
+			con.ID.String(),
+			true,
+			false,
+			false,
+			false,
+			nil,
+		)
+
+		if err != nil {
+			r.log.Errorf("Fail to register event consumer: %v", err)
+		}
+
+		for m := range msg {
+			r.log.Infof("type: %s\nbody: %s", m.Type, m.Body)
+		}
+	}
+
+	return messageListener, eventListener
 }
 
 func (r *eventRepo) SendAddFriend(ctx context.Context, sid int64, receiverUuid string, note string, uid string) error {
