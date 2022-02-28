@@ -15,7 +15,7 @@ import (
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewGreeterRepo)
+var ProviderSet = wire.NewSet(NewData, NewGreeterRepo, NewMessageRepo)
 
 type RabbitMQ struct {
 	Conn    *amqp.Connection
@@ -70,7 +70,13 @@ func NewData(conf *conf.Data, logger log.Logger) (*Data, func(), error) {
 	}
 
 	// 检验表格是否存在
-	// TODO
+	if !db.Migrator().HasTable(&FriendAddMessage{}) {
+		err = db.Migrator().CreateTable(&FriendAddMessage{})
+	}
+	if err != nil {
+		l.Error(err)
+		return nil, nil, err
+	}
 
 	conn, err := amqp.Dial("amqp://" + conf.Rabbitmq.GetUser() +
 		":" + conf.Rabbitmq.GetPassword() +

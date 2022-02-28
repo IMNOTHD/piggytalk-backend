@@ -7,21 +7,10 @@ option java_multiple_files = true;
 option java_package = "api.relation.v1";
 
 service FriendRelation {
-  rpc AddFriendRequestRelation (AddFriendRequestRelationRequest) returns (AddFriendRequestRelationReply);
   rpc CreateFriendRelation (CreateFriendRelationRequest) returns (CreateFriendRelationReply);
   // 双向删除
   rpc DeleteFriendRelation (DeleteFriendRelationRequest) returns (DeleteFriendRelationReply);
   rpc ListFriendRelation (ListFriendRelationRequest) returns (ListFriendRelationReply);
-}
-
-message AddFriendRequestRelationRequest {
-  string userAUUID = 1;
-  string userBUUiD = 2;
-  string note = 3;
-}
-
-message AddFriendRequestRelationReply {
-  bool success = 1;
 }
 
 message CreateFriendRelationRequest {

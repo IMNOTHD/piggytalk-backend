@@ -27,6 +27,15 @@ func NewEventRepo(data *Data, logger log.Logger) v1.EventRepo {
 	}
 }
 
+// message type
+const ()
+
+// event type
+const (
+	_addFriend    = "AddFriend"
+	_createFriend = "CreateFriend"
+)
+
 func (r *eventRepo) RabbitMqLister(ctx context.Context) (func(), func()) {
 	eventSessionQueue := strconv.Itoa(int(con.WorkerId)) + _eventMQSuffix
 	messageSessionQueue := strconv.Itoa(int(con.WorkerId)) + _messageMQSuffix
@@ -101,7 +110,7 @@ func (r *eventRepo) SendAddFriend(ctx context.Context, sid int64, receiverUuid s
 			ContentType: "text/plain",
 			MessageId:   strconv.Itoa(int(sid)),
 			Body:        x,
-			Type:        "AddFriend",
+			Type:        _addFriend,
 		},
 	)
 	if err != nil {

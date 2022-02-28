@@ -9,6 +9,7 @@ import (
 	"github.com/golang/glog"
 )
 
+// 修改时同步修改其他服务的副本
 const (
 	epoch             = int64(1577808000000)                           // 设置起始时间(时间戳/毫秒)：2020-01-01 00:00:00，有效期69年
 	timestampBits     = uint(41)                                       // 时间戳占用位数

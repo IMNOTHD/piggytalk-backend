@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package message.api.message.v1;
+
+option go_package = "message/api/message/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.message.v1";
+
+service Message {
+	rpc CreateMessage (CreateMessageRequest) returns (CreateMessageReply);
+}
+
+message CreateMessageRequest {}
+message CreateMessageReply {}

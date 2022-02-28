@@ -10,10 +10,12 @@ import (
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
 	"message/internal/biz"
+	"message/internal/biz/message/v1"
 	"message/internal/conf"
 	"message/internal/data"
 	"message/internal/server"
 	"message/internal/service"
+	service2 "message/internal/service/message/v1"
 )
 
 // Injectors from wire.go:
@@ -27,7 +29,10 @@ func initApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*
 	greeterRepo := data.NewGreeterRepo(dataData, logger)
 	greeterUsecase := biz.NewGreeterUsecase(greeterRepo, logger)
 	greeterService := service.NewGreeterService(greeterUsecase, logger)
-	grpcServer := server.NewGRPCServer(confServer, greeterService, logger)
+	messageRepo := data.NewMessageRepo(dataData, logger)
+	messageUsecase := v1.NewMessageUsecase(messageRepo, logger)
+	messageService := service2.NewMessageService(messageUsecase, logger)
+	grpcServer := server.NewGRPCServer(confServer, greeterService, messageService, logger)
 	app := newApp(logger, grpcServer)
 	return app, func() {
 		cleanup()

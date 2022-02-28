@@ -2,7 +2,9 @@ package v1
 
 import (
 	"context"
+	"encoding/json"
 	"io"
+	"strconv"
 	"sync"
 	"time"
 
@@ -28,6 +30,27 @@ type lastEvent struct {
 	EventUuid uuid.UUID
 	SendTime  int64
 }
+
+// SessionReceiveMq 参数为uid
+type SessionReceiveMq map[string]chan struct {
+	Type      string
+	Body      string
+	MessageId string
+}
+
+// message type
+const ()
+
+// event type
+const (
+	_addFriend    = "AddFriend"
+	_createFriend = "CreateFriend"
+)
+
+var (
+	receiveMessageMq SessionReceiveMq
+	receiveEventMq   SessionReceiveMq
+)
 
 func NewEventStreamService(eu *v1.EventUsecase, logger log.Logger) *EventStreamService {
 	service := &EventStreamService{
@@ -64,6 +87,7 @@ func (s *EventStreamService) EventStream(conn pb.EventStream_EventStreamServer) 
 	var sessionId string = ""
 	uid := ""
 	ctx := context.Background()
+	token := ""
 	//lm := lastMessage{
 	//	MessageUuid: uuid.UUID{},
 	//	SendTime:    0,
@@ -79,6 +103,77 @@ func (s *EventStreamService) EventStream(conn pb.EventStream_EventStreamServer) 
 
 	consumer := func(sc <-chan struct{}, c chan pb.EventStreamRequest) {
 		defer wg.Done()
+
+		go func() {
+			// 登录成功后, 可以接收消息
+		ForEnd:
+			for {
+				select {
+				case <-sc:
+					return
+				default:
+					if uid != "" {
+						break ForEnd
+					}
+				}
+			}
+
+			for {
+				select {
+				case <-sc:
+					return
+				case r, ok := <-receiveEventMq[uid]:
+					if !ok {
+						return
+					}
+
+					switch r.Type {
+					case _addFriend:
+						type body struct {
+							ReceiverUuid string
+							Note         string
+							Uid          string
+						}
+						var b body
+						err := json.Unmarshal([]byte(r.Body), &b)
+						if err != nil {
+							s.log.Error(err)
+							continue
+						}
+
+						m, err := strconv.ParseInt(r.MessageId, 10, 64)
+						if err != nil {
+							s.log.Error(err)
+							continue
+						}
+
+						err = conn.Send(&pb.EventStreamResponse{
+							Token:    token,
+							Code:     pb.Code_OK,
+							Messages: "",
+							Event: &pb.EventStreamResponse_NotifyReceiveAddFriendResponse{
+								NotifyReceiveAddFriendResponse: &pb.NotifyReceiveAddFriendResponse{
+									EventId:     m,
+									RequestUuid: b.Uid,
+									Note:        b.Note,
+								},
+							},
+						})
+						if err != nil {
+							s.log.Error(err)
+							continue
+						}
+					}
+				case r, ok := <-receiveMessageMq[uid]:
+					if !ok {
+						return
+					}
+					switch r.Type {
+
+					}
+				}
+			}
+		}()
 
 		for {
 			if exit {
@@ -112,6 +207,8 @@ func (s *EventStreamService) EventStream(conn pb.EventStream_EventStreamServer) 
 						exit = true
 						break
 					}
+
+					token = req.GetToken()
 
 					err = conn.Send(&pb.EventStreamResponse{
 						Token:    req.GetToken(),

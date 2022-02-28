@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.19.1
-// source: api/relation/v1/friend_relation.proto
+// source: internal/api/account/relation/v1/friend_relation.proto
 
 package v1
 
@@ -22,7 +22,6 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FriendRelationClient interface {
-	AddFriendRequestRelation(ctx context.Context, in *AddFriendRequestRelationRequest, opts ...grpc.CallOption) (*AddFriendRequestRelationReply, error)
 	CreateFriendRelation(ctx context.Context, in *CreateFriendRelationRequest, opts ...grpc.CallOption) (*CreateFriendRelationReply, error)
 	// 双向删除
 	DeleteFriendRelation(ctx context.Context, in *DeleteFriendRelationRequest, opts ...grpc.CallOption) (*DeleteFriendRelationReply, error)
@@ -35,15 +34,6 @@ type friendRelationClient struct {
 
 func NewFriendRelationClient(cc grpc.ClientConnInterface) FriendRelationClient {
 	return &friendRelationClient{cc}
-}
-
-func (c *friendRelationClient) AddFriendRequestRelation(ctx context.Context, in *AddFriendRequestRelationRequest, opts ...grpc.CallOption) (*AddFriendRequestRelationReply, error) {
-	out := new(AddFriendRequestRelationReply)
-	err := c.cc.Invoke(ctx, "/account.api.relation.v1.FriendRelation/AddFriendRequestRelation", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *friendRelationClient) CreateFriendRelation(ctx context.Context, in *CreateFriendRelationRequest, opts ...grpc.CallOption) (*CreateFriendRelationReply, error) {
@@ -77,7 +67,6 @@ func (c *friendRelationClient) ListFriendRelation(ctx context.Context, in *ListF
 // All implementations must embed UnimplementedFriendRelationServer
 // for forward compatibility
 type FriendRelationServer interface {
-	AddFriendRequestRelation(context.Context, *AddFriendRequestRelationRequest) (*AddFriendRequestRelationReply, error)
 	CreateFriendRelation(context.Context, *CreateFriendRelationRequest) (*CreateFriendRelationReply, error)
 	// 双向删除
 	DeleteFriendRelation(context.Context, *DeleteFriendRelationRequest) (*DeleteFriendRelationReply, error)
@@ -89,9 +78,6 @@ type FriendRelationServer interface {
 type UnimplementedFriendRelationServer struct {
 }
 
-func (UnimplementedFriendRelationServer) AddFriendRequestRelation(context.Context, *AddFriendRequestRelationRequest) (*AddFriendRequestRelationReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddFriendRequestRelation not implemented")
-}
 func (UnimplementedFriendRelationServer) CreateFriendRelation(context.Context, *CreateFriendRelationRequest) (*CreateFriendRelationReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateFriendRelation not implemented")
 }
@@ -112,24 +98,6 @@ type UnsafeFriendRelationServer interface {
 
 func RegisterFriendRelationServer(s grpc.ServiceRegistrar, srv FriendRelationServer) {
 	s.RegisterService(&FriendRelation_ServiceDesc, srv)
-}
-
-func _FriendRelation_AddFriendRequestRelation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AddFriendRequestRelationRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FriendRelationServer).AddFriendRequestRelation(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/account.api.relation.v1.FriendRelation/AddFriendRequestRelation",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FriendRelationServer).AddFriendRequestRelation(ctx, req.(*AddFriendRequestRelationRequest))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _FriendRelation_CreateFriendRelation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -194,10 +162,6 @@ var FriendRelation_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*FriendRelationServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "AddFriendRequestRelation",
-			Handler:    _FriendRelation_AddFriendRequestRelation_Handler,
-		},
-		{
 			MethodName: "CreateFriendRelation",
 			Handler:    _FriendRelation_CreateFriendRelation_Handler,
 		},
@@ -211,5 +175,5 @@ var FriendRelation_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "api/relation/v1/friend_relation.proto",
+	Metadata: "internal/api/account/relation/v1/friend_relation.proto",
 }
