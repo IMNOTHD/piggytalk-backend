@@ -35,7 +35,7 @@ func (r *eventRepo) RabbitMqLister(ctx context.Context) (func(), func()) {
 	messageListener := func() {
 		msg, err := r.data.Rmq.Channel.Consume(
 			messageSessionQueue,
-			con.ID.String(),
+			"",
 			true,
 			false,
 			false,
@@ -55,7 +55,7 @@ func (r *eventRepo) RabbitMqLister(ctx context.Context) (func(), func()) {
 	eventListener := func() {
 		msg, err := r.data.Rmq.Channel.Consume(
 			eventSessionQueue,
-			con.ID.String(),
+			"",
 			true,
 			false,
 			false,
