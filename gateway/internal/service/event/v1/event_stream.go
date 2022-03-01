@@ -371,6 +371,36 @@ func (s *EventStreamService) EventStream(conn pb.EventStream_EventStreamServer) 
 					if err != nil {
 						s.log.Error(err)
 					}
+				case *pb.EventStreamRequest_ListFriendRequest:
+					if uid == "" {
+						continue
+					}
+
+					l, err := s.eu.ListFriend(ctx, uid)
+					if err != nil {
+						s.log.Error(err)
+						err = conn.Send(&pb.EventStreamResponse{
+							Token:    req.GetToken(),
+							Code:     pb.Code_UNAVAILABLE,
+							Messages: "服务错误",
+							Event:    &pb.EventStreamResponse_ListFriendResponse{},
+						})
+						if err != nil {
+							s.log.Error(err)
+						}
+					}
+
+					err = conn.Send(&pb.EventStreamResponse{
+						Token:    req.GetToken(),
+						Code:     pb.Code_OK,
+						Messages: "",
+						Event: &pb.EventStreamResponse_ListFriendResponse{
+							ListFriendResponse: &pb.ListFriendResponse{FriendUuid: l},
+						},
+					})
+					if err != nil {
+						s.log.Error(err)
+					}
 				}
 			}
 

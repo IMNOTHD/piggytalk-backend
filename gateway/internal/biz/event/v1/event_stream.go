@@ -6,8 +6,8 @@ import (
 	"time"
 
 	acV1 "gateway/internal/api/account/account/v1"
-	v1 "gateway/internal/api/account/relation/v1"
-	v12 "gateway/internal/api/message/message/v1"
+	rV1 "gateway/internal/api/account/relation/v1"
+	mV1 "gateway/internal/api/message/message/v1"
 	snV1 "gateway/internal/api/snowflake/snowflake/v1"
 	"gateway/internal/conf"
 	"gateway/internal/kit"
@@ -47,15 +47,31 @@ func (uc *EventUsecase) RabbitMqListener(ctx context.Context) (func(), func()) {
 	return uc.repo.RabbitMqLister(ctx)
 }
 
-func (uc *EventUsecase) ConfirmFriendRequest(ctx context.Context, addStat string, eventUuid string) (int64, error) {
+func (uc *EventUsecase) ListFriend(ctx context.Context, uid string) ([]string, error) {
+	conn, err := kit.ServiceConn(kit.AccountEndpoint)
+	if err != nil {
+		uc.log.Error(err)
+		return nil, err
+	}
 
+	x := rV1.NewFriendRelationClient(conn)
+	r, err := x.ListFriendRelation(ctx, &rV1.ListFriendRelationRequest{UserUUID: uid})
+	if err != nil {
+		uc.log.Error(err)
+		return nil, err
+	}
+
+	return r.GetFriendUUID(), nil
+}
+
+func (uc *EventUsecase) ConfirmFriendRequest(ctx context.Context, addStat string, eventUuid string) (int64, error) {
 	conn, err := kit.ServiceConn(kit.MessageEndpoint)
 	if err != nil {
 		uc.log.Error(err)
 		return 0, err
 	}
-	z := v12.NewMessageClient(conn)
-	mr, err := z.SelectFriendRequest(ctx, &v12.SelectFriendRequestRequest{EventUuid: eventUuid})
+	z := mV1.NewMessageClient(conn)
+	mr, err := z.SelectFriendRequest(ctx, &mV1.SelectFriendRequestRequest{EventUuid: eventUuid})
 	if err != nil {
 		uc.log.Error(err)
 		return 0, err
@@ -82,8 +98,8 @@ func (uc *EventUsecase) ConfirmFriendRequest(ctx context.Context, addStat string
 		return 0, err
 	}
 
-	x := v1.NewFriendRelationClient(conn)
-	r, err := x.CreateFriendRelation(ctx, &v1.CreateFriendRelationRequest{
+	x := rV1.NewFriendRelationClient(conn)
+	r, err := x.CreateFriendRelation(ctx, &rV1.CreateFriendRelationRequest{
 		UserAUUID: userAUuid,
 		UserBUUiD: userBUuid,
 	})

@@ -21,6 +21,7 @@ message EventStreamRequest {
     AddFriendRequest addFriendRequest = 5;
     ConfirmFriendRequest confirmFriendRequest = 6;
     NotifyReceiveAddFriendRequest notifyReceiveAddFriendRequest = 7;
+    ListFriendRequest listFriendRequest = 8;
   }
 }
 
@@ -35,6 +36,7 @@ message EventStreamResponse {
     AddFriendResponse addFriendResponse = 7;
     ConfirmFriendResponse confirmFriendResponse = 8;
     NotifyReceiveAddFriendResponse notifyReceiveAddFriendResponse = 9;
+    ListFriendResponse listFriendResponse = 10;
   }
 }
 
@@ -91,6 +93,10 @@ message NotifyReceiveAddFriendRequest {
   int64 eventId = 1;
 }
 
+message ListFriendRequest {
+  string token = 1;
+}
+
 // ------------------------------
 // 以下为服务端发起的response event
 
@@ -141,6 +147,10 @@ message NotifyReceiveAddFriendResponse {
   int64 eventId = 1;
   string requestUuid = 2;
   string note = 3;
+}
+
+message ListFriendResponse {
+  repeated string friendUuid = 1;
 }
 
 // ------------------------------
