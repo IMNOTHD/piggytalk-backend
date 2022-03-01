@@ -84,16 +84,18 @@ func (r *eventRepo) RabbitMqLister(ctx context.Context) (func(), func()) {
 	return messageListener, eventListener
 }
 
-func (r *eventRepo) SendAddFriend(ctx context.Context, sid int64, receiverUuid string, note string, uid string) error {
+func (r *eventRepo) SendAddFriend(ctx context.Context, sid int64, receiverUuid string, note string, uid string, eventUuid string) error {
 	type body struct {
 		ReceiverUuid string
 		Note         string
 		Uid          string
+		EventUuid    string
 	}
 	b := body{
 		ReceiverUuid: receiverUuid,
 		Note:         note,
 		Uid:          uid,
+		EventUuid:    eventUuid,
 	}
 	x, err := json.Marshal(b)
 	if err != nil {

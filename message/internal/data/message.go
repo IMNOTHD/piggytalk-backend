@@ -56,6 +56,7 @@ type FriendAddMessage struct {
 	UserB     uuid.UUID `gorm:"not null"`
 	Type      string    `gorm:"type:enum('Request', 'Allow', 'Delete');default:'Request'"`
 	Ack       string    `gorm:"type:enum('FALSE', 'TRUE');default:'FALSE'"`
+	EventUuid string
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
@@ -119,6 +120,7 @@ func (r *messageRepo) AddFriend(ctx context.Context, body []byte, mid string) er
 		ReceiverUuid string
 		Note         string
 		Uid          string
+		EventUuid    string
 	}
 
 	var x b
@@ -139,6 +141,7 @@ func (r *messageRepo) AddFriend(ctx context.Context, body []byte, mid string) er
 		UserA:     uuid.MustParse(x.Uid),
 		UserB:     uuid.MustParse(x.ReceiverUuid),
 		Type:      "Request",
+		EventUuid: x.EventUuid,
 	})
 	if ru.Error != nil {
 		r.log.Error(err)

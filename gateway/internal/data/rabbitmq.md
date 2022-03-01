@@ -1,5 +1,5 @@
 # rabbitmq
 
-| Type      | Body                                                                |
-|-----------|---------------------------------------------------------------------|
-| AddFriend | ```type body struct {ReceiverUuid string Note string Uid string}``` |
+| Type      | Body                                                                                 |
+|-----------|--------------------------------------------------------------------------------------|
+| AddFriend | ```type body struct {ReceiverUuid string Note string Uid string EventUuid string}``` |

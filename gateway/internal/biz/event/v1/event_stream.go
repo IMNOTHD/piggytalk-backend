@@ -16,7 +16,7 @@ import (
 
 type EventRepo interface {
 	RabbitMqLister(ctx context.Context) (func(), func())
-	SendAddFriend(ctx context.Context, sid int64, receiverUuid string, note string, uid string) error
+	SendAddFriend(ctx context.Context, sid int64, receiverUuid string, note string, uid string, eventUuid string) error
 	CreateSessionId(ctx context.Context, token string, sid string, uid string) (SessionId, error)
 	RemoveSessionId(ctx context.Context, token string, sid string) error
 	SelectToken(ctx context.Context, sessionId string) (string, error)
@@ -43,7 +43,7 @@ func (uc *EventUsecase) RabbitMqListener(ctx context.Context) (func(), func()) {
 	return uc.repo.RabbitMqLister(ctx)
 }
 
-func (uc *EventUsecase) AddFriendRequest(ctx context.Context, receiverUuid uuid.UUID, note string, uid string) (int64, error) {
+func (uc *EventUsecase) AddFriendRequest(ctx context.Context, receiverUuid uuid.UUID, note string, uid string, eventUuid string) (int64, error) {
 	conn, err := kit.ServiceConn(kit.SnowflakeEndpoint)
 	if err != nil {
 		uc.log.Error(err)
@@ -61,7 +61,7 @@ func (uc *EventUsecase) AddFriendRequest(ctx context.Context, receiverUuid uuid.
 	}
 
 	eid := sr.GetSnowFlakeId()
-	err = uc.repo.SendAddFriend(ctx, eid, receiverUuid.String(), note, uid)
+	err = uc.repo.SendAddFriend(ctx, eid, receiverUuid.String(), note, uid, eventUuid)
 	if err != nil {
 		uc.log.Error(err)
 		return 0, err

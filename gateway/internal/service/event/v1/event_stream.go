@@ -133,6 +133,7 @@ func (s *EventStreamService) EventStream(conn pb.EventStream_EventStreamServer) 
 							ReceiverUuid string
 							Note         string
 							Uid          string
+							EventUuid    string
 						}
 						var b body
 						err := json.Unmarshal([]byte(r.Body), &b)
@@ -287,7 +288,7 @@ func (s *EventStreamService) EventStream(conn pb.EventStream_EventStreamServer) 
 						continue
 					}
 
-					eid, err := s.eu.AddFriendRequest(ctx, uuid.MustParse(req.GetAddFriendRequest().GetReceiverUuid()), req.GetAddFriendRequest().GetNote(), uid)
+					eid, err := s.eu.AddFriendRequest(ctx, uuid.MustParse(req.GetAddFriendRequest().GetReceiverUuid()), req.GetAddFriendRequest().GetNote(), uid, req.GetAddFriendRequest().GetEventUuid())
 					if err != nil {
 						s.log.Error(err)
 						err = conn.Send(&pb.EventStreamResponse{
