@@ -15,6 +15,7 @@ var ConsulClient *api.Client
 const (
 	SnowflakeEndpoint = "discovery:///piggytalk-backend-snowflake"
 	AccountEndpoint   = "discovery:///piggytalk-backend-account"
+	MessageEndpoint   = "discovery:///piggytalk-backend-message"
 )
 
 func init() {

@@ -6,16 +6,20 @@ import (
 	"time"
 
 	acV1 "gateway/internal/api/account/account/v1"
+	v1 "gateway/internal/api/account/relation/v1"
+	v12 "gateway/internal/api/message/message/v1"
 	snV1 "gateway/internal/api/snowflake/snowflake/v1"
 	"gateway/internal/conf"
 	"gateway/internal/kit"
 
+	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/uuid"
 )
 
 type EventRepo interface {
 	RabbitMqLister(ctx context.Context) (func(), func())
+	SendConfirmFriend(ctx context.Context, sid int64, receiverUuid string, uid string, eventUuid string, addStat string) error
 	SendAddFriend(ctx context.Context, sid int64, receiverUuid string, note string, uid string, eventUuid string) error
 	CreateSessionId(ctx context.Context, token string, sid string, uid string) (SessionId, error)
 	RemoveSessionId(ctx context.Context, token string, sid string) error
@@ -41,6 +45,64 @@ func NewEventUsecase(repo EventRepo, logger log.Logger) *EventUsecase {
 
 func (uc *EventUsecase) RabbitMqListener(ctx context.Context) (func(), func()) {
 	return uc.repo.RabbitMqLister(ctx)
+}
+
+func (uc *EventUsecase) ConfirmFriendRequest(ctx context.Context, addStat string, eventUuid string) (int64, error) {
+
+	conn, err := kit.ServiceConn(kit.MessageEndpoint)
+	if err != nil {
+		uc.log.Error(err)
+		return 0, err
+	}
+	z := v12.NewMessageClient(conn)
+	mr, err := z.SelectFriendRequest(ctx, &v12.SelectFriendRequestRequest{EventUuid: eventUuid})
+	if err != nil {
+		uc.log.Error(err)
+		return 0, err
+	}
+	userAUuid := mr.UserAUuid
+	userBUuid := mr.UserBUuid
+
+	conn, err = kit.ServiceConn(kit.SnowflakeEndpoint)
+	if err != nil {
+		uc.log.Error(err)
+		return 0, err
+	}
+
+	c := snV1.NewSnowflakeClient(conn)
+	sr, err := c.CreateSnowflake(ctx, &snV1.CreateSnowflakeRequest{
+		DataCenterId: 0,
+		WorkerId:     int64(conf.WorkerId),
+	})
+	eid := sr.GetSnowFlakeId()
+
+	conn, err = kit.ServiceConn(kit.AccountEndpoint)
+	if err != nil {
+		uc.log.Error(err)
+		return 0, err
+	}
+
+	x := v1.NewFriendRelationClient(conn)
+	r, err := x.CreateFriendRelation(ctx, &v1.CreateFriendRelationRequest{
+		UserAUUID: userAUuid,
+		UserBUUiD: userBUuid,
+	})
+	if err != nil {
+		uc.log.Error(err)
+		return 0, err
+	}
+
+	if !r.Success {
+		uc.log.Error("CreateFriend Failed")
+		return 0, errors.New(500, "SERVICE_ERROR", "服务错误")
+	}
+
+	err = uc.repo.SendConfirmFriend(ctx, eid, userAUuid, userAUuid, eventUuid, addStat)
+	if err != nil {
+		uc.log.Error(err)
+	}
+
+	return eid, nil
 }
 
 func (uc *EventUsecase) AddFriendRequest(ctx context.Context, receiverUuid uuid.UUID, note string, uid string, eventUuid string) (int64, error) {

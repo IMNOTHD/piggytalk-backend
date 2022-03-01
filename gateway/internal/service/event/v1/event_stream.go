@@ -31,12 +31,14 @@ type lastEvent struct {
 	SendTime  int64
 }
 
-// SessionReceiveMq 参数为uid
-type SessionReceiveMq map[string]chan struct {
+type Message struct {
 	Type      string
 	Body      string
 	MessageId string
 }
+
+// SessionReceiveMq 参数为uid
+type SessionReceiveMq map[string]chan Message
 
 // message type
 const ()
@@ -48,8 +50,8 @@ const (
 )
 
 var (
-	receiveMessageMq SessionReceiveMq
-	receiveEventMq   SessionReceiveMq
+	ReceiveMessageMq SessionReceiveMq
+	ReceiveEventMq   SessionReceiveMq
 )
 
 func NewEventStreamService(eu *v1.EventUsecase, logger log.Logger) *EventStreamService {
@@ -118,11 +120,14 @@ func (s *EventStreamService) EventStream(conn pb.EventStream_EventStreamServer) 
 				}
 			}
 
+			ReceiveEventMq[uid] = make(chan Message)
+			ReceiveMessageMq[uid] = make(chan Message)
+
 			for {
 				select {
 				case <-sc:
 					return
-				case r, ok := <-receiveEventMq[uid]:
+				case r, ok := <-ReceiveEventMq[uid]:
 					if !ok {
 						return
 					}
@@ -165,7 +170,7 @@ func (s *EventStreamService) EventStream(conn pb.EventStream_EventStreamServer) 
 							continue
 						}
 					}
-				case r, ok := <-receiveMessageMq[uid]:
+				case r, ok := <-ReceiveMessageMq[uid]:
 					if !ok {
 						return
 					}
@@ -295,7 +300,9 @@ func (s *EventStreamService) EventStream(conn pb.EventStream_EventStreamServer) 
 							Token:    req.GetToken(),
 							Code:     pb.Code_UNAVAILABLE,
 							Messages: "服务错误",
-							Event:    &pb.EventStreamResponse_AddFriendResponse{},
+							Event: &pb.EventStreamResponse_AddFriendResponse{
+								AddFriendResponse: &pb.AddFriendResponse{EventUuid: req.GetAddFriendRequest().GetEventUuid()},
+							},
 						})
 						if err != nil {
 							s.log.Error(err)
@@ -313,6 +320,57 @@ func (s *EventStreamService) EventStream(conn pb.EventStream_EventStreamServer) 
 							},
 						},
 					})
+					if err != nil {
+						s.log.Error(err)
+					}
+				case *pb.EventStreamRequest_ConfirmFriendRequest:
+					if uid == "" {
+						continue
+					}
+
+					k := lastEvent{EventUuid: uuid.MustParse(req.GetConfirmFriendRequest().GetEventUuid()), SendTime: req.GetConfirmFriendRequest().GetSendTime()}
+					if k == le {
+						continue
+					}
+
+					st := "WAITING"
+					switch req.GetConfirmFriendRequest().GetAddStatCode() {
+					case pb.AddStatCode_SUCCESS:
+						st = "SUCCESS"
+					case pb.AddStatCode_DENIED:
+						st = "DENIED"
+					}
+
+					eid, err := s.eu.ConfirmFriendRequest(ctx, st, req.GetConfirmFriendRequest().GetEventUuid())
+					if err != nil {
+						s.log.Error(err)
+						err = conn.Send(&pb.EventStreamResponse{
+							Token:    req.GetToken(),
+							Code:     pb.Code_UNAVAILABLE,
+							Messages: "服务错误",
+							Event: &pb.EventStreamResponse_ConfirmFriendResponse{
+								ConfirmFriendResponse: &pb.ConfirmFriendResponse{EventUuid: req.GetConfirmFriendRequest().GetEventUuid()},
+							},
+						})
+						if err != nil {
+							s.log.Error(err)
+						}
+					}
+
+					err = conn.Send(&pb.EventStreamResponse{
+						Token:    req.GetToken(),
+						Code:     pb.Code_OK,
+						Messages: "",
+						Event: &pb.EventStreamResponse_ConfirmFriendResponse{
+							ConfirmFriendResponse: &pb.ConfirmFriendResponse{
+								EventUuid: req.GetAddFriendRequest().GetEventUuid(),
+								EventId:   eid,
+							},
+						},
+					})
+					if err != nil {
+						s.log.Error(err)
+					}
 				}
 			}
 

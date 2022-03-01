@@ -8,6 +8,7 @@ import (
 
 type MessageRepo interface {
 	RabbitMqLister(ctx context.Context) (func(), func())
+	SelectFriendRequest(ctx context.Context, eventUuid string) (string, string, error)
 }
 
 type MessageUsecase struct {
@@ -24,4 +25,8 @@ func NewMessageUsecase(repo MessageRepo, logger log.Logger) *MessageUsecase {
 
 func (uc *MessageUsecase) RabbitMQListener(ctx context.Context) (func(), func()) {
 	return uc.repo.RabbitMqLister(ctx)
+}
+
+func (uc *MessageUsecase) SelectFriendRequest(ctx context.Context, eventUuid string) (string, string, error) {
+	return uc.repo.SelectFriendRequest(ctx, eventUuid)
 }

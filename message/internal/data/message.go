@@ -54,7 +54,7 @@ type FriendAddMessage struct {
 	MessageId int64
 	UserA     uuid.UUID `gorm:"not null"`
 	UserB     uuid.UUID `gorm:"not null"`
-	Type      string    `gorm:"type:enum('Request', 'Allow', 'Delete');default:'Request'"`
+	Type      string    `gorm:"type:enum('WAITING', 'SUCCESS', 'DENIED');default:'WAITING'"`
 	Ack       string    `gorm:"type:enum('FALSE', 'TRUE');default:'FALSE'"`
 	EventUuid string
 	CreatedAt time.Time
@@ -62,7 +62,8 @@ type FriendAddMessage struct {
 }
 
 func (r *messageRepo) RabbitMqLister(ctx context.Context) (func(), func()) {
-	// 往回发消息一定要把message id发回去！
+	// 往回发消息一定要把message-id发回去！
+	// 往回发消息一定要把接收者uuid写在correlation-id发回去！
 
 	// message消息
 	messageListener := func() {
@@ -115,6 +116,18 @@ func (r *messageRepo) RabbitMqLister(ctx context.Context) (func(), func()) {
 	return messageListener, eventListener
 }
 
+func (r *messageRepo) SelectFriendRequest(ctx context.Context, eventUuid string) (string, string, error) {
+	var f FriendAddMessage
+
+	ru := r.data.Db.Where(&FriendAddMessage{EventUuid: eventUuid}).Last(&f)
+	if ru.Error != nil {
+		r.log.Error(ru.Error)
+		return "", "", ru.Error
+	}
+
+	return f.UserA.String(), f.UserB.String(), nil
+}
+
 func (r *messageRepo) AddFriend(ctx context.Context, body []byte, mid string) error {
 	type b struct {
 		ReceiverUuid string
@@ -140,7 +153,7 @@ func (r *messageRepo) AddFriend(ctx context.Context, body []byte, mid string) er
 		MessageId: m,
 		UserA:     uuid.MustParse(x.Uid),
 		UserB:     uuid.MustParse(x.ReceiverUuid),
-		Type:      "Request",
+		Type:      "WAITING",
 		EventUuid: x.EventUuid,
 	})
 	if ru.Error != nil {
@@ -174,10 +187,11 @@ func (r *messageRepo) AddFriend(ctx context.Context, body []byte, mid string) er
 		false,
 		false,
 		amqp.Publishing{
-			ContentType: "text/plain",
-			Body:        body,
-			Type:        _addFriend,
-			MessageId:   mid,
+			ContentType:   "text/plain",
+			Body:          body,
+			Type:          _addFriend,
+			MessageId:     mid,
+			CorrelationId: x.ReceiverUuid,
 		},
 	)
 	if err != nil {

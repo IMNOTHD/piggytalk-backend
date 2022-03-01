@@ -36,3 +36,15 @@ func (s *MessageService) rabbitmqListener() {
 func (s *MessageService) CreateMessage(ctx context.Context, req *pb.CreateMessageRequest) (*pb.CreateMessageReply, error) {
 	return &pb.CreateMessageReply{}, nil
 }
+
+func (s *MessageService) SelectFriendRequest(ctx context.Context, req *pb.SelectFriendRequestRequest) (*pb.SelectFriendRequestReply, error) {
+	a, b, err := s.eu.SelectFriendRequest(ctx, req.GetEventUuid())
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.SelectFriendRequestReply{
+		UserAUuid: a,
+		UserBUuid: b,
+	}, nil
+}

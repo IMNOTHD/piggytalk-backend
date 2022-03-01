@@ -9,6 +9,7 @@ import (
 
 	v1 "gateway/internal/biz/event/v1"
 	con "gateway/internal/conf"
+	v12 "gateway/internal/service/event/v1"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-redis/redis/v8"
@@ -57,7 +58,14 @@ func (r *eventRepo) RabbitMqLister(ctx context.Context) (func(), func()) {
 		}
 
 		for m := range msg {
-			r.log.Infof("type: %s\nbody: %s", m.Type, m.Body)
+			r.log.Infof("Receive Message: type: %s\nbody: %s\n correlation-id: %s\n message-id", m.Type, m.Body, m.CorrelationId, m.MessageId)
+			if m.CorrelationId != "" && v12.ReceiveMessageMq[m.CorrelationId] != nil {
+				v12.ReceiveMessageMq[m.CorrelationId] <- v12.Message{
+					Type:      m.Type,
+					Body:      string(m.Body),
+					MessageId: m.MessageId,
+				}
+			}
 		}
 	}
 	// 消费event session消息
@@ -77,11 +85,56 @@ func (r *eventRepo) RabbitMqLister(ctx context.Context) (func(), func()) {
 		}
 
 		for m := range msg {
-			r.log.Infof("type: %s\nbody: %s", m.Type, m.Body)
+			r.log.Infof("Receive Event: type: %s\nbody: %s\n correlation-id: %s\n message-id", m.Type, m.Body, m.CorrelationId, m.MessageId)
+			if m.CorrelationId != "" && v12.ReceiveEventMq[m.CorrelationId] != nil {
+				v12.ReceiveEventMq[m.CorrelationId] <- v12.Message{
+					Type:      m.Type,
+					Body:      string(m.Body),
+					MessageId: m.MessageId,
+				}
+			}
 		}
 	}
 
 	return messageListener, eventListener
+}
+
+func (r *eventRepo) SendConfirmFriend(ctx context.Context, sid int64, receiverUuid string, uid string, eventUuid string, addStat string) error {
+	type body struct {
+		ReceiverUuid string
+		Uid          string
+		AddStatCode  string
+		EventUuid    string
+	}
+	b := body{
+		ReceiverUuid: receiverUuid,
+		Uid:          uid,
+		AddStatCode:  addStat,
+		EventUuid:    eventUuid,
+	}
+	x, err := json.Marshal(b)
+	if err != nil {
+		r.log.Error(err)
+		return err
+	}
+
+	err = r.data.Rmq.Channel.Publish(
+		_eventTopicEx,
+		_eventMasterMQ,
+		false,
+		false,
+		amqp.Publishing{
+			ContentType: "text/plain",
+			MessageId:   strconv.Itoa(int(sid)),
+			Body:        x,
+			Type:        _createFriend,
+		},
+	)
+	if err != nil {
+		r.log.Error(err)
+	}
+
+	return err
 }
 
 func (r *eventRepo) SendAddFriend(ctx context.Context, sid int64, receiverUuid string, note string, uid string, eventUuid string) error {
