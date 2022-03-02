@@ -401,6 +401,16 @@ func (s *EventStreamService) EventStream(conn pb.EventStream_EventStreamServer) 
 					if err != nil {
 						s.log.Error(err)
 					}
+				case *pb.EventStreamRequest_DeleteFriendRequest:
+					if uid == "" {
+						continue
+					}
+
+					k := lastEvent{EventUuid: uuid.MustParse(req.GetDeleteFriendRequest().GetEventUuid()), SendTime: req.GetDeleteFriendRequest().GetSendTime()}
+					if k == le {
+						continue
+					}
+
 				}
 			}
 

@@ -31,6 +31,7 @@ const ()
 const (
 	_addFriend    = "AddFriend"
 	_createFriend = "CreateFriend"
+	_deleteFriend = "DeleteFriend"
 )
 
 func NewMessageRepo(data *Data, logger log.Logger) v1.MessageRepo {

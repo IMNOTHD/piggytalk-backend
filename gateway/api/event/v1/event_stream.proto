@@ -22,6 +22,7 @@ message EventStreamRequest {
     ConfirmFriendRequest confirmFriendRequest = 6;
     NotifyReceiveAddFriendRequest notifyReceiveAddFriendRequest = 7;
     ListFriendRequest listFriendRequest = 8;
+    DeleteFriendRequest deleteFriendRequest = 9;
   }
 }
 
@@ -37,6 +38,7 @@ message EventStreamResponse {
     ConfirmFriendResponse confirmFriendResponse = 8;
     NotifyReceiveAddFriendResponse notifyReceiveAddFriendResponse = 9;
     ListFriendResponse listFriendResponse = 10;
+    DeleteFriendResponse deleteFriendResponse = 11;
   }
 }
 
@@ -97,6 +99,12 @@ message ListFriendRequest {
   string token = 1;
 }
 
+message DeleteFriendRequest {
+  string eventUuid = 1;
+  int64 sendTime = 2;
+  string removeUuid = 3;
+}
+
 // ------------------------------
 // 以下为服务端发起的response event
 
@@ -151,6 +159,11 @@ message NotifyReceiveAddFriendResponse {
 
 message ListFriendResponse {
   repeated string friendUuid = 1;
+}
+
+message DeleteFriendResponse {
+  string eventUuid = 1;
+  int64 eventId = 2;
 }
 
 // ------------------------------

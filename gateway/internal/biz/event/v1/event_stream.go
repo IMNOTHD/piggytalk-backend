@@ -19,6 +19,7 @@ import (
 
 type EventRepo interface {
 	RabbitMqLister(ctx context.Context) (func(), func())
+	SendDeleteFriend(ctx context.Context, uid string, deleteUuid string, sid int64, eventUuid string) error
 	SendConfirmFriend(ctx context.Context, sid int64, receiverUuid string, uid string, eventUuid string, addStat string) error
 	SendAddFriend(ctx context.Context, sid int64, receiverUuid string, note string, uid string, eventUuid string) error
 	CreateSessionId(ctx context.Context, token string, sid string, uid string) (SessionId, error)
@@ -116,6 +117,49 @@ func (uc *EventUsecase) ConfirmFriendRequest(ctx context.Context, addStat string
 	err = uc.repo.SendConfirmFriend(ctx, eid, userAUuid, userAUuid, eventUuid, addStat)
 	if err != nil {
 		uc.log.Error(err)
+	}
+
+	return eid, nil
+}
+
+func (uc *EventUsecase) DeleteFriend(ctx context.Context, deleteUuid string, uid string) (int64, error) {
+	conn, err := kit.ServiceConn(kit.SnowflakeEndpoint)
+	if err != nil {
+		uc.log.Error(err)
+		return 0, err
+	}
+
+	c := snV1.NewSnowflakeClient(conn)
+	sr, err := c.CreateSnowflake(ctx, &snV1.CreateSnowflakeRequest{
+		DataCenterId: 0,
+		WorkerId:     int64(conf.WorkerId),
+	})
+	if err != nil {
+		uc.log.Error(err)
+		return 0, err
+	}
+
+	eid := sr.GetSnowFlakeId()
+
+	conn, err = kit.ServiceConn(kit.AccountEndpoint)
+	if err != nil {
+		uc.log.Error(err)
+		return 0, err
+	}
+
+	x := rV1.NewFriendRelationClient(conn)
+	r, err := x.DeleteFriendRelation(ctx, &rV1.DeleteFriendRelationRequest{
+		UserAUUID: deleteUuid,
+		UserBUUiD: uid,
+	})
+	if err != nil {
+		uc.log.Error(err)
+		return 0, err
+	}
+
+	if !r.Success {
+		uc.log.Error("CreateFriend Failed")
+		return 0, errors.New(500, "SERVICE_ERROR", "服务错误")
 	}
 
 	return eid, nil
