@@ -23,6 +23,7 @@ message EventStreamRequest {
     NotifyReceiveAddFriendRequest notifyReceiveAddFriendRequest = 7;
     ListFriendRequest listFriendRequest = 8;
     DeleteFriendRequest deleteFriendRequest = 9;
+    SingleMessageRequest singleMessageRequest = 10;
   }
 }
 
@@ -39,6 +40,7 @@ message EventStreamResponse {
     NotifyReceiveAddFriendResponse notifyReceiveAddFriendResponse = 9;
     ListFriendResponse listFriendResponse = 10;
     DeleteFriendResponse deleteFriendResponse = 11;
+    SingleMessageResponse singleMessageResponse = 12;
   }
 }
 
@@ -61,16 +63,6 @@ message OfflineRequest {
   string sessionId = 2;
 }
 
-//// 单聊
-//message SingleMessageRequest {
-//  string message = 1;
-//  string messageUuid = 2;
-//  // 接收者uuid
-//  string receiverUuid = 3;
-//  // 发送者毫秒时间戳, 如与上一条信息完全相同且时差在50ms内, 抛弃, 送达时间以服务器时间为准
-//  int64 sendTime = 4;
-//}
-
 // 添加好友请求
 message AddFriendRequest {
   string receiverUuid = 1;
@@ -82,6 +74,7 @@ message AddFriendRequest {
   int64 sendTime = 4;
 }
 
+// 确认好友请求
 message ConfirmFriendRequest {
   AddStatCode addStatCode = 1;
   // 客户端生成, 不作为标识使用, 仅去重
@@ -95,14 +88,27 @@ message NotifyReceiveAddFriendRequest {
   int64 eventId = 1;
 }
 
+// 好友列表
 message ListFriendRequest {
   string token = 1;
 }
 
+
+// 删除好友
 message DeleteFriendRequest {
   string eventUuid = 1;
   int64 sendTime = 2;
   string removeUuid = 3;
+}
+
+// 单聊
+message SingleMessageRequest {
+  repeated Message messageChain = 1;
+  string messageUuid = 2;
+  // 接收者uuid
+  string receiverUuid = 3;
+  // 发送者毫秒时间戳, 如与上一条信息完全相同且时差在50ms内, 抛弃, 送达时间以服务器时间为准
+  int64 sendTime = 4;
 }
 
 // ------------------------------
@@ -132,11 +138,11 @@ message OfflineResponse {
   string token = 1;
 }
 
-//message SingleMessageResponse {
-//  // snowflakeId
-//  int64 messageId = 1;
-//  string messageUuid = 2;
-//}
+message SingleMessageResponse {
+  // snowflakeId
+  int64 messageId = 1;
+  string messageUuid = 2;
+}
 
 message AddFriendResponse {
   string eventUuid = 1;
@@ -167,7 +173,24 @@ message DeleteFriendResponse {
 }
 
 // ------------------------------
-// 通用enum
+// 通用类型
+
+message Message {
+  message Plain {
+    string text = 1;
+  }
+  message Image {
+    string url = 1;
+  }
+  message Emoji {
+    string name = 1;
+  }
+  oneof detail {
+    Plain plain = 1;
+    Image image = 2;
+    Emoji emoji = 3;
+  }
+}
 
 enum Code {
   // 成功
