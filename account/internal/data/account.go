@@ -50,6 +50,27 @@ type UserInfo struct {
 	UpdatedAt time.Time
 }
 
+func (r *accountRepo) SelectUserInfo(ctx context.Context, uuids []string) ([]*v1.NoSecretUserInfo, error) {
+	var userInfos []*UserInfo
+
+	ru := r.data.Db.Find(&userInfos, uuids)
+	if ru.Error != nil && !errors.Is(ru.Error, gorm.ErrRecordNotFound) {
+		r.log.Error(ru.Error)
+		return nil, ru.Error
+	}
+
+	var x []*v1.NoSecretUserInfo
+	for _, info := range userInfos {
+		x = append(x, &v1.NoSecretUserInfo{
+			Uuid:     info.UUID.String(),
+			Avatar:   info.Avatar,
+			Nickname: info.Nickname,
+		})
+	}
+
+	return x, nil
+}
+
 func (r *accountRepo) CheckToken(ctx context.Context, t *v1.TokenInfo) (*v1.TokenInfo, error) {
 	var buffer bytes.Buffer
 	buffer.WriteString("piggytalk:account:token2uuid:")

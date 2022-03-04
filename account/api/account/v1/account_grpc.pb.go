@@ -25,6 +25,7 @@ type AccountClient interface {
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginReply, error)
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterReply, error)
 	CheckLoginStat(ctx context.Context, in *CheckLoginStatRequest, opts ...grpc.CallOption) (*CheckLoginStatResponse, error)
+	GetUserInfo(ctx context.Context, in *GetUserInfoRequest, opts ...grpc.CallOption) (*GetUserInfoResponse, error)
 }
 
 type accountClient struct {
@@ -62,6 +63,15 @@ func (c *accountClient) CheckLoginStat(ctx context.Context, in *CheckLoginStatRe
 	return out, nil
 }
 
+func (c *accountClient) GetUserInfo(ctx context.Context, in *GetUserInfoRequest, opts ...grpc.CallOption) (*GetUserInfoResponse, error) {
+	out := new(GetUserInfoResponse)
+	err := c.cc.Invoke(ctx, "/account.api.account.v1.Account/GetUserInfo", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AccountServer is the server API for Account service.
 // All implementations must embed UnimplementedAccountServer
 // for forward compatibility
@@ -69,6 +79,7 @@ type AccountServer interface {
 	Login(context.Context, *LoginRequest) (*LoginReply, error)
 	Register(context.Context, *RegisterRequest) (*RegisterReply, error)
 	CheckLoginStat(context.Context, *CheckLoginStatRequest) (*CheckLoginStatResponse, error)
+	GetUserInfo(context.Context, *GetUserInfoRequest) (*GetUserInfoResponse, error)
 	mustEmbedUnimplementedAccountServer()
 }
 
@@ -84,6 +95,9 @@ func (UnimplementedAccountServer) Register(context.Context, *RegisterRequest) (*
 }
 func (UnimplementedAccountServer) CheckLoginStat(context.Context, *CheckLoginStatRequest) (*CheckLoginStatResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckLoginStat not implemented")
+}
+func (UnimplementedAccountServer) GetUserInfo(context.Context, *GetUserInfoRequest) (*GetUserInfoResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserInfo not implemented")
 }
 func (UnimplementedAccountServer) mustEmbedUnimplementedAccountServer() {}
 
@@ -152,6 +166,24 @@ func _Account_CheckLoginStat_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Account_GetUserInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserInfoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccountServer).GetUserInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/account.api.account.v1.Account/GetUserInfo",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccountServer).GetUserInfo(ctx, req.(*GetUserInfoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Account_ServiceDesc is the grpc.ServiceDesc for Account service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -170,6 +202,10 @@ var Account_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CheckLoginStat",
 			Handler:    _Account_CheckLoginStat_Handler,
+		},
+		{
+			MethodName: "GetUserInfo",
+			Handler:    _Account_GetUserInfo_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

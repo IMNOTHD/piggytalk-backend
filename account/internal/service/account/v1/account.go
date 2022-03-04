@@ -24,6 +24,24 @@ func NewAccountService(au *v1.AccountUsecase, logger log.Logger) *AccountService
 	}
 }
 
+func (s *AccountService) GetUserInfo(ctx context.Context, req *pb.GetUserInfoRequest) (*pb.GetUserInfoResponse, error) {
+	x, err := s.au.GetUserInfo(ctx, req.GetUuid())
+	if err != nil {
+		return nil, err
+	}
+
+	var r []*pb.GetUserInfoResponse_UserInfo
+	for _, info := range x {
+		r = append(r, &pb.GetUserInfoResponse_UserInfo{
+			Uuid:     info.Uuid,
+			Avatar:   info.Avatar,
+			Nickname: info.Nickname,
+		})
+	}
+
+	return &pb.GetUserInfoResponse{Userinfo: r}, nil
+}
+
 func (s *AccountService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginReply, error) {
 	a, t, err := s.au.Login(ctx, &v1.Account{
 		Username: req.GetAccount(),

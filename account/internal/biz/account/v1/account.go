@@ -28,7 +28,14 @@ type TokenInfo struct {
 	UserUUID *uuid.UUID
 }
 
+type NoSecretUserInfo struct {
+	Uuid     string
+	Avatar   string
+	Nickname string
+}
+
 type AccountRepo interface {
+	SelectUserInfo(ctx context.Context, uuids []string) ([]*NoSecretUserInfo, error)
 	CreateUser(ctx context.Context, a *Account) (*uuid.UUID, error)
 	CreateUserLoginToken(ctx context.Context, t *TokenInfo) (*TokenInfo, error)
 	CheckUserPassword(ctx context.Context, a *Account) (*Account, error)
@@ -45,6 +52,10 @@ func NewAccountUsecase(repo AccountRepo, logger log.Logger) *AccountUsecase {
 		repo: repo,
 		log:  log.NewHelper(log.With(logger, "module", "account/biz/account/v1", "caller", log.DefaultCaller)),
 	}
+}
+
+func (uc *AccountUsecase) GetUserInfo(ctx context.Context, uuids []string) ([]*NoSecretUserInfo, error) {
+	return uc.repo.SelectUserInfo(ctx, uuids)
 }
 
 func (uc *AccountUsecase) Login(ctx context.Context, a *Account) (*Account, *TokenInfo, error) {

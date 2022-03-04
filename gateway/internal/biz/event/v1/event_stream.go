@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	pb "gateway/api/event/v1"
 	acV1 "gateway/internal/api/account/account/v1"
 	rV1 "gateway/internal/api/account/relation/v1"
 	mV1 "gateway/internal/api/message/message/v1"
@@ -46,6 +47,32 @@ func NewEventUsecase(repo EventRepo, logger log.Logger) *EventUsecase {
 
 func (uc *EventUsecase) RabbitMqListener(ctx context.Context) (func(), func()) {
 	return uc.repo.RabbitMqLister(ctx)
+}
+
+func (uc *EventUsecase) ListUserInfo(ctx context.Context, uuids []string) ([]*pb.ListUserInfoResponse_UserInfo, error) {
+	conn, err := kit.ServiceConn(kit.AccountEndpoint)
+	if err != nil {
+		uc.log.Error(err)
+		return nil, err
+	}
+
+	x := acV1.NewAccountClient(conn)
+	r, err := x.GetUserInfo(ctx, &acV1.GetUserInfoRequest{Uuid: uuids})
+	if err != nil {
+		uc.log.Error(err)
+		return nil, err
+	}
+
+	var u []*pb.ListUserInfoResponse_UserInfo
+	for _, info := range r.GetUserinfo() {
+		u = append(u, &pb.ListUserInfoResponse_UserInfo{
+			Uuid:     info.GetUuid(),
+			Avatar:   info.GetAvatar(),
+			Nickname: info.GetNickname(),
+		})
+	}
+
+	return u, nil
 }
 
 func (uc *EventUsecase) ListFriend(ctx context.Context, uid string) ([]string, error) {
@@ -93,25 +120,27 @@ func (uc *EventUsecase) ConfirmFriendRequest(ctx context.Context, addStat string
 	})
 	eid := sr.GetSnowFlakeId()
 
-	conn, err = kit.ServiceConn(kit.AccountEndpoint)
-	if err != nil {
-		uc.log.Error(err)
-		return 0, err
-	}
+	if addStat == "SUCCESS" {
+		conn, err = kit.ServiceConn(kit.AccountEndpoint)
+		if err != nil {
+			uc.log.Error(err)
+			return 0, err
+		}
 
-	x := rV1.NewFriendRelationClient(conn)
-	r, err := x.CreateFriendRelation(ctx, &rV1.CreateFriendRelationRequest{
-		UserAUUID: userAUuid,
-		UserBUUiD: userBUuid,
-	})
-	if err != nil {
-		uc.log.Error(err)
-		return 0, err
-	}
+		x := rV1.NewFriendRelationClient(conn)
+		r, err := x.CreateFriendRelation(ctx, &rV1.CreateFriendRelationRequest{
+			UserAUUID: userAUuid,
+			UserBUUiD: userBUuid,
+		})
+		if err != nil {
+			uc.log.Error(err)
+			return 0, err
+		}
 
-	if !r.Success {
-		uc.log.Error("CreateFriend Failed")
-		return 0, errors.New(500, "SERVICE_ERROR", "服务错误")
+		if !r.Success {
+			uc.log.Error("CreateFriend Failed")
+			return 0, errors.New(500, "SERVICE_ERROR", "服务错误")
+		}
 	}
 
 	err = uc.repo.SendConfirmFriend(ctx, eid, userAUuid, userAUuid, eventUuid, addStat)
@@ -158,7 +187,7 @@ func (uc *EventUsecase) DeleteFriend(ctx context.Context, deleteUuid string, uid
 	}
 
 	if !r.Success {
-		uc.log.Error("CreateFriend Failed")
+		uc.log.Error("DeleteFriend Failed")
 		return 0, errors.New(500, "SERVICE_ERROR", "服务错误")
 	}
 

@@ -10,6 +10,20 @@ service Account {
   rpc Login (LoginRequest) returns (LoginReply);
   rpc Register (RegisterRequest) returns (RegisterReply);
   rpc CheckLoginStat (CheckLoginStatRequest) returns (CheckLoginStatResponse);
+  rpc GetUserInfo (GetUserInfoRequest) returns (GetUserInfoResponse);
+}
+
+message GetUserInfoRequest {
+  repeated string uuid = 1;
+}
+
+message GetUserInfoResponse {
+  message UserInfo {
+    string uuid = 1;
+    string avatar = 2;
+    string nickname = 3;
+  }
+  repeated UserInfo userinfo = 1;
 }
 
 message LoginRequest {

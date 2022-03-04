@@ -411,6 +411,66 @@ func (s *EventStreamService) EventStream(conn pb.EventStream_EventStreamServer) 
 						continue
 					}
 
+					eid, err := s.eu.DeleteFriend(ctx, uid, req.GetDeleteFriendRequest().GetRemoveUuid())
+					if err != nil {
+						s.log.Error(err)
+						err = conn.Send(&pb.EventStreamResponse{
+							Token:    req.GetToken(),
+							Code:     pb.Code_UNAVAILABLE,
+							Messages: "服务错误",
+							Event: &pb.EventStreamResponse_DeleteFriendResponse{
+								DeleteFriendResponse: &pb.DeleteFriendResponse{EventUuid: req.GetConfirmFriendRequest().GetEventUuid()},
+							},
+						})
+						if err != nil {
+							s.log.Error(err)
+						}
+					}
+
+					err = conn.Send(&pb.EventStreamResponse{
+						Token:    req.GetToken(),
+						Code:     pb.Code_OK,
+						Messages: "",
+						Event: &pb.EventStreamResponse_DeleteFriendResponse{
+							DeleteFriendResponse: &pb.DeleteFriendResponse{
+								EventUuid: req.GetAddFriendRequest().GetEventUuid(),
+								EventId:   eid,
+							},
+						},
+					})
+					if err != nil {
+						s.log.Error(err)
+					}
+				case *pb.EventStreamRequest_ListUserInfoRequest:
+					if uid == "" {
+						continue
+					}
+
+					l, err := s.eu.ListUserInfo(ctx, req.GetListUserInfoRequest().GetUuid())
+					if err != nil {
+						s.log.Error(err)
+						err = conn.Send(&pb.EventStreamResponse{
+							Token:    req.GetToken(),
+							Code:     pb.Code_UNAVAILABLE,
+							Messages: "服务错误",
+							Event:    &pb.EventStreamResponse_ListUserInfoResponse{},
+						})
+						if err != nil {
+							s.log.Error(err)
+						}
+					}
+
+					err = conn.Send(&pb.EventStreamResponse{
+						Token:    req.GetToken(),
+						Code:     pb.Code_OK,
+						Messages: "",
+						Event: &pb.EventStreamResponse_ListUserInfoResponse{
+							ListUserInfoResponse: &pb.ListUserInfoResponse{Userinfo: l},
+						},
+					})
+					if err != nil {
+						s.log.Error(err)
+					}
 				}
 			}
 

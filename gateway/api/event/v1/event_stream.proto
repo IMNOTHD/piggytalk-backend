@@ -24,6 +24,7 @@ message EventStreamRequest {
     ListFriendRequest listFriendRequest = 8;
     DeleteFriendRequest deleteFriendRequest = 9;
     SingleMessageRequest singleMessageRequest = 10;
+    ListUserInfoRequest listUserInfoRequest = 11;
   }
 }
 
@@ -41,6 +42,7 @@ message EventStreamResponse {
     ListFriendResponse listFriendResponse = 10;
     DeleteFriendResponse deleteFriendResponse = 11;
     SingleMessageResponse singleMessageResponse = 12;
+    ListUserInfoResponse listUserInfoResponse = 13;
   }
 }
 
@@ -111,6 +113,10 @@ message SingleMessageRequest {
   int64 sendTime = 4;
 }
 
+message ListUserInfoRequest {
+  repeated string uuid = 1;
+}
+
 // ------------------------------
 // 以下为服务端发起的response event
 
@@ -170,6 +176,15 @@ message ListFriendResponse {
 message DeleteFriendResponse {
   string eventUuid = 1;
   int64 eventId = 2;
+}
+
+message ListUserInfoResponse {
+  message UserInfo {
+    string uuid = 1;
+    string avatar = 2;
+    string nickname = 3;
+  }
+  repeated UserInfo userinfo = 1;
 }
 
 // ------------------------------
