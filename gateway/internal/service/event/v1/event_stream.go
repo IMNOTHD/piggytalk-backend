@@ -55,6 +55,9 @@ var (
 )
 
 func NewEventStreamService(eu *v1.EventUsecase, logger log.Logger) *EventStreamService {
+	ReceiveEventMq = make(SessionReceiveMq)
+	ReceiveMessageMq = make(SessionReceiveMq)
+
 	service := &EventStreamService{
 		eu:  eu,
 		log: log.NewHelper(log.With(logger, "module", "gateway/service/event/v1", "caller", log.DefaultCaller)),

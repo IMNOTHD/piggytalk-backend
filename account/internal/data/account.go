@@ -101,10 +101,10 @@ func (r *accountRepo) CheckUserPassword(ctx context.Context, a *v1.Account) (*v1
 	var u User
 	var ui UserInfo
 
-	// username查询
-	ru := r.data.Db.Where(&User{
-		Username: a.Username,
-	}).First(&u)
+	ru := r.data.Db.
+		Where(`uuid IN (select users.uuid from users where users.username=? union all select user_infos.uuid from user_infos where user_infos.phone=? union all select user_infos.uuid from user_infos where user_infos.email=?)`, a.Username, a.Username, a.Username).
+		Find(&u)
+
 	if ru.Error != nil && !errors.Is(ru.Error, gorm.ErrRecordNotFound) {
 		r.log.Error(ru.Error)
 		return nil, ru.Error
@@ -120,40 +120,6 @@ func (r *accountRepo) CheckUserPassword(ctx context.Context, a *v1.Account) (*v1
 		if rui := r.data.Db.Where(&UserInfo{UUID: u.UUID}).First(&ui); rui.Error != nil {
 			r.log.Error(rui.Error)
 			return nil, rui.Error
-		}
-
-		r.log.Infof("%s success check password", u.UUID)
-		return &v1.Account{
-			Username: u.Username,
-			Nickname: ui.Nickname,
-			Email:    ui.Email,
-			Phone:    ui.Phone,
-			Avatar:   ui.Avatar,
-			UUID:     u.UUID,
-		}, nil
-	}
-
-	// phone, email查询
-	rui := r.data.Db.Where(&UserInfo{
-		Email: a.Username,
-	}).Or(&UserInfo{
-		Phone: a.Username,
-	}).First(&ui)
-	if rui.Error != nil && !errors.Is(rui.Error, gorm.ErrRecordNotFound) {
-		r.log.Error(rui.Error)
-		return nil, rui.Error
-	}
-	if rui.RowsAffected != 0 {
-		if ru := r.data.Db.Where(&User{UUID: ui.UUID}).First(&u); ru.Error != nil {
-			r.log.Error(rui.Error)
-			return nil, rui.Error
-		}
-
-		// 验证密码
-		err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(a.Password+u.UUID.String()))
-		if err != nil {
-			r.log.Infof("user password error: %s", a.Username)
-			return nil, errors.New(400, "BAD_REQUEST", "用户名或密码错误")
 		}
 
 		r.log.Infof("%s success check password", u.UUID)
