@@ -123,8 +123,8 @@ func (s *EventStreamService) EventStream(conn pb.EventStream_EventStreamServer) 
 				}
 			}
 
-			ReceiveEventMq[uid] = make(chan Message)
-			ReceiveMessageMq[uid] = make(chan Message)
+			ReceiveEventMq[uid] = make(chan Message, 256)
+			ReceiveMessageMq[uid] = make(chan Message, 256)
 
 			for {
 				select {
