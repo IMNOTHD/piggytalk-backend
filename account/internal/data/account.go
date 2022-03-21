@@ -32,22 +32,38 @@ func NewAccountRepo(data *Data, logger log.Logger) v1.AccountRepo {
 
 type User struct {
 	ID        uint
-	Username  string    `gorm:"unique;not null"`
+	Username  string    `gorm:"unique;not null;index:idx_username"`
 	Password  string    `gorm:"not null"`
-	UUID      uuid.UUID `gorm:"not null"`
+	UUID      uuid.UUID `gorm:"not null;index:idx_uuid"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
 
 type UserInfo struct {
 	ID        uint
-	UUID      uuid.UUID `gorm:"not null"`
+	UUID      uuid.UUID `gorm:"not null;index:idx_uuid"`
 	Nickname  string    `gorm:"not null"`
 	Avatar    string
-	Email     string
-	Phone     string
+	Email     string `gorm:"index:idx_email"`
+	Phone     string `gorm:"index:idx_phone"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
+}
+
+const (
+	_singleMessagePrefix = "single_message_"
+	_groupMessagePrefix  = "group_message_"
+)
+
+// SingleMessage 每个用户有自己的消息保存表, 写扩散, 这里做创建表用, 表名`single_message_*uuid*`
+type SingleMessage struct {
+	MessageId  int64     `gorm:"primaryKey"`
+	SenderUuid uuid.UUID `gorm:"not null;index:idx_sender"`
+	// 表示在与谁聊天
+	Talk        uuid.UUID `gorm:"not null;index:idx_talk"`
+	Message     string
+	MessageUuid string
+	CreatedAt   time.Time
 }
 
 func (r *accountRepo) SelectUserInfo(ctx context.Context, uuids []string) ([]*v1.NoSecretUserInfo, error) {
@@ -210,7 +226,7 @@ func (r *accountRepo) CreateUser(ctx context.Context, a *v1.Account) (*uuid.UUID
 	}
 	if rui.RowsAffected != 0 {
 		r.log.Infof("phone exists: %s", a.Phone)
-		return nil, errors.New(400, "BAD_REQUEST", "手机已被使用")
+		return nil, errors.New(400, "BAD_REQUEST", "手机不可用")
 	}
 
 	// email查询
@@ -223,7 +239,7 @@ func (r *accountRepo) CreateUser(ctx context.Context, a *v1.Account) (*uuid.UUID
 	}
 	if rui.RowsAffected != 0 {
 		r.log.Infof("email exists: %s", a.Email)
-		return nil, errors.New(400, "BAD_REQUEST", "邮箱已被使用")
+		return nil, errors.New(400, "BAD_REQUEST", "邮箱不可用")
 	}
 
 	userUuid := uuid.New()
@@ -233,29 +249,43 @@ func (r *accountRepo) CreateUser(ctx context.Context, a *v1.Account) (*uuid.UUID
 		return nil, err
 	}
 
-	ru = r.data.Db.Create(&User{
-		Username: a.Username,
-		Password: string(hash),
-		UUID:     userUuid,
-	})
-	if ru.Error != nil {
-		r.log.Error(err)
-		return nil, err
-	}
-	r.log.Infof("success create user %s, id %d", u.Username, u.ID)
+	tErr := r.data.Db.Transaction(func(tx *gorm.DB) error {
+		ru = tx.Create(&User{
+			Username: a.Username,
+			Password: string(hash),
+			UUID:     userUuid,
+		})
+		if ru.Error != nil {
+			r.log.Error(ru.Error)
+			return ru.Error
+		}
 
-	ru = r.data.Db.Create(&UserInfo{
-		UUID:     userUuid,
-		Nickname: a.Nickname,
-		Avatar:   "",
-		Email:    a.Email,
-		Phone:    a.Phone,
-	})
-	if ru.Error != nil {
-		r.log.Error(ru.Error)
-		return nil, ru.Error
-	}
-	r.log.Infof("success create userInfo, id %d", ui.ID)
+		ru = tx.Create(&UserInfo{
+			UUID:     userUuid,
+			Nickname: a.Nickname,
+			Avatar:   "",
+			Email:    a.Email,
+			Phone:    a.Phone,
+		})
+		if ru.Error != nil {
+			r.log.Error(ru.Error)
+			return ru.Error
+		}
 
-	return &userUuid, nil
+		err := tx.Table(_singleMessagePrefix + userUuid.String()).Migrator().CreateTable(&SingleMessage{})
+		if err != nil {
+			r.log.Error(err)
+			return err
+		}
+		//TODO group message table
+
+		return nil
+	})
+	if tErr == nil {
+		r.log.Infof("success create user %s, id %d", u.Username, u.ID)
+		r.log.Infof("success create userInfo, id %d", ui.ID)
+		r.log.Infof("success create user single message table, id %d", ui.ID)
+	}
+
+	return &userUuid, tErr
 }

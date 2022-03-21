@@ -15,6 +15,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/consul/api"
 	"github.com/streadway/amqp"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type messageRepo struct {
@@ -25,7 +27,10 @@ type messageRepo struct {
 var consulClient *api.Client
 
 // message type
-const ()
+const (
+	_singleTalk = "SingleTalk"
+	_groupTalk  = "GroupTalk"
+)
 
 // event type
 const (
@@ -51,15 +56,33 @@ func NewMessageRepo(data *Data, logger log.Logger) v1.MessageRepo {
 }
 
 type FriendAddMessage struct {
-	ID        uint
-	MessageId int64
-	UserA     uuid.UUID `gorm:"not null"`
-	UserB     uuid.UUID `gorm:"not null"`
+	MessageId int64     `gorm:"primaryKey"`
+	UserA     uuid.UUID `gorm:"not null;index:idx_sender"`
+	UserB     uuid.UUID `gorm:"not null;index:idx_receiver"`
 	Type      string    `gorm:"type:enum('WAITING', 'SUCCESS', 'DENIED');default:'WAITING'"`
 	Ack       string    `gorm:"type:enum('FALSE', 'TRUE');default:'FALSE'"`
-	EventUuid string
+	EventUuid string    `gorm:"uniqueIndex:idx_event_uuid"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
+}
+
+const (
+	_friendAddEventPrefix = "friend_add_"
+	_groupAddEventPrefix  = "group_add_"
+	_singleMessagePrefix  = "single_message_"
+	_groupMessagePrefix   = "group_message_"
+)
+
+// SingleMessage 每个用户有自己的消息保存表, 写扩散
+type SingleMessage struct {
+	MessageId  int64     `gorm:"primaryKey"`
+	SenderUuid uuid.UUID `gorm:"not null;index:idx_sender"`
+	// 表示在与谁聊天
+	Talk        uuid.UUID `gorm:"not null;index:idx_talk"`
+	Message     string
+	MessageUuid string `gorm:"uniqueIndex:idx_message_uuid"`
+	AlreadyRead bool
+	CreatedAt   time.Time
 }
 
 func (r *messageRepo) RabbitMqLister(ctx context.Context) (func(), func()) {
@@ -84,6 +107,13 @@ func (r *messageRepo) RabbitMqLister(ctx context.Context) (func(), func()) {
 
 		for m := range msg {
 			r.log.Infof("type: %s\nbody: %s", m.Type, m.Body)
+			switch m.Type {
+			case _singleTalk:
+				err := r.SingleMessage(ctx, m.Body, m.MessageId)
+				if err != nil {
+					r.log.Error(err)
+				}
+			}
 		}
 	}
 	// 消费event消息
@@ -104,7 +134,7 @@ func (r *messageRepo) RabbitMqLister(ctx context.Context) (func(), func()) {
 
 		for m := range msg {
 			r.log.Infof("type: %s\nbody: %s", m.Type, m.Body)
-			switch string(m.Body) {
+			switch m.Type {
 			case _addFriend:
 				err := r.AddFriend(ctx, m.Body, m.MessageId)
 				if err != nil {
@@ -115,6 +145,102 @@ func (r *messageRepo) RabbitMqLister(ctx context.Context) (func(), func()) {
 	}
 
 	return messageListener, eventListener
+}
+
+func (r *messageRepo) SingleMessage(ctx context.Context, body []byte, mid string) error {
+	type b struct {
+		Talk        string
+		SenderUuid  string
+		Message     string
+		MessageUuid string
+	}
+	var x b
+	err := json.Unmarshal(body, &x)
+	if err != nil {
+		r.log.Error(err)
+		return err
+	}
+
+	m, err := strconv.ParseInt(mid, 10, 64)
+	if err != nil {
+		r.log.Error(err)
+		return err
+	}
+
+	// 事务, 写扩散
+	ru := r.data.Db.Transaction(func(tx *gorm.DB) error {
+		// 发送者消息记录
+		a := tx.Table(_singleMessagePrefix + x.SenderUuid).Clauses(clause.Insert{Modifier: "IGNORE"}).Create(&SingleMessage{
+			MessageId:   m,
+			SenderUuid:  uuid.MustParse(x.SenderUuid),
+			Talk:        uuid.MustParse(x.Talk),
+			Message:     x.Message,
+			MessageUuid: x.MessageUuid,
+			AlreadyRead: true,
+		})
+		if a.Error != nil {
+			r.log.Error(a.Error)
+			return a.Error
+		}
+
+		// 接收者消息记录
+		b := tx.Table(_singleMessagePrefix + x.Talk).Clauses(clause.Insert{Modifier: "IGNORE"}).Create(&SingleMessage{
+			MessageId:   m,
+			SenderUuid:  uuid.MustParse(x.SenderUuid),
+			Talk:        uuid.MustParse(x.SenderUuid),
+			Message:     x.Message,
+			MessageUuid: x.MessageUuid,
+			AlreadyRead: false,
+		})
+		if b.Error != nil {
+			r.log.Error(b.Error)
+			return b.Error
+		}
+
+		return nil
+	})
+	if ru != nil {
+		return ru
+	}
+
+	// 消息写入成功, 投递
+	sid, err := r.selectUuidFromSession(ctx, x.Talk)
+	if err != nil {
+		r.log.Error(err)
+		return nil
+	}
+	s, err := strconv.ParseInt(sid, 10, 64)
+	if err != nil {
+		r.log.Error(err)
+		return nil
+	}
+
+	_, w := kit.GetDeviceID(s)
+	kv, _, err := consulClient.KV().Get(strconv.Itoa(int(w)), nil)
+	if err != nil {
+		r.log.Error(err)
+		return nil
+	}
+	messageSessionQueue := string(kv.Value) + _messageMQSuffix
+	err = r.data.Rmq.Channel.Publish(
+		_messageTopicEx,
+		messageSessionQueue,
+		false,
+		false,
+		amqp.Publishing{
+			ContentType:   "text/plain",
+			Body:          body,
+			Type:          _singleTalk,
+			MessageId:     mid,
+			CorrelationId: x.Talk,
+		},
+	)
+	if err != nil {
+		r.log.Error(err)
+		return nil
+	}
+
+	return nil
 }
 
 func (r *messageRepo) SelectFriendRequest(ctx context.Context, eventUuid string) (string, string, error) {
@@ -150,7 +276,7 @@ func (r *messageRepo) AddFriend(ctx context.Context, body []byte, mid string) er
 		return err
 	}
 
-	ru := r.data.Db.Create(&FriendAddMessage{
+	ru := r.data.Db.Clauses(clause.Insert{Modifier: "IGNORE"}).Create(&FriendAddMessage{
 		MessageId: m,
 		UserA:     uuid.MustParse(x.Uid),
 		UserB:     uuid.MustParse(x.ReceiverUuid),
