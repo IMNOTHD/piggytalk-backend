@@ -85,6 +85,19 @@ func (s *AccountService) Register(ctx context.Context, req *pb.RegisterRequest) 
 	return &pb.RegisterReply{Token: string(t)}, nil
 }
 
+func (s *AccountService) UpdateAvatar(ctx context.Context, req *pb.UpdateAvatarRequest) (*pb.UpdateAvatarReply, error) {
+	err := s.au.UpdateAvatar(ctx, req.GetToken(), req.GetAvatar())
+	if err != nil {
+		s.log.Error(err)
+		return nil, errorCheck(err)
+	}
+
+	return &pb.UpdateAvatarReply{
+		Token:  req.GetToken(),
+		Avatar: req.GetAvatar(),
+	}, nil
+}
+
 // 拦截错误, 防止把内部错误带出去
 func errorCheck(err error) error {
 	e := errors.FromError(err)

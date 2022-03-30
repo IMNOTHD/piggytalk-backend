@@ -21,6 +21,12 @@ service Account {
       body: "*"
     };
   }
+  rpc UpdateAvatar (UpdateAvatarRequest) returns (UpdateAvatarReply) {
+    option (google.api.http) = {
+      post: "/account/v1/avatar"
+      body: "*"
+    };
+  }
 }
 
 message LoginRequest {
@@ -53,4 +59,14 @@ message RegisterRequest {
 
 message RegisterReply {
   string token = 1;
+}
+
+message UpdateAvatarRequest {
+  string token = 1;
+  string avatar = 2;
+}
+
+message UpdateAvatarReply {
+  string token = 1;
+  string avatar = 2;
 }

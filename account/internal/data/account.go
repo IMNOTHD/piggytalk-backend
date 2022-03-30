@@ -66,6 +66,16 @@ type SingleMessage struct {
 	CreatedAt   time.Time
 }
 
+func (r *accountRepo) UpdateAvatar(ctx context.Context, uuid string, avatar string) error {
+	ru := r.data.Db.Model(&UserInfo{}).Where("uuid = ?", uuid).Update("avatar", avatar)
+	if ru.Error != nil {
+		r.log.Error(ru.Error)
+		return ru.Error
+	}
+
+	return nil
+}
+
 func (r *accountRepo) SelectUserInfo(ctx context.Context, uuids []string) ([]*v1.NoSecretUserInfo, error) {
 	var userInfos []*UserInfo
 

@@ -11,6 +11,17 @@ service Account {
   rpc Register (RegisterRequest) returns (RegisterReply);
   rpc CheckLoginStat (CheckLoginStatRequest) returns (CheckLoginStatResponse);
   rpc GetUserInfo (GetUserInfoRequest) returns (GetUserInfoResponse);
+  rpc UpdateAvatar (UpdateAvatarRequest) returns (UpdateAvatarReply);
+}
+
+message UpdateAvatarRequest {
+  string token = 1;
+  string avatar = 2;
+}
+
+message UpdateAvatarReply {
+  string token = 1;
+  string avatar = 2;
 }
 
 message GetUserInfoRequest {

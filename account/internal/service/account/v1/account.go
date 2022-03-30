@@ -106,3 +106,21 @@ func (s *AccountService) CheckLoginStat(ctx context.Context, req *pb.CheckLoginS
 
 	return &pb.CheckLoginStatResponse{Token: ""}, nil
 }
+
+func (s *AccountService) UpdateAvatar(ctx context.Context, req *pb.UpdateAvatarRequest) (*pb.UpdateAvatarReply, error) {
+	t, err := s.au.CheckUserLoginStatus(ctx, &v1.TokenInfo{Token: req.GetToken(), Device: v1.DeviceWeb})
+	if err != nil {
+		return nil, err
+	}
+
+	if t.Token != req.Token {
+		return &pb.UpdateAvatarReply{Avatar: "", Token: ""}, nil
+	}
+
+	err = s.au.UpdateAvatar(ctx, t.UserUUID.String(), req.Avatar)
+	if err != nil {
+		return &pb.UpdateAvatarReply{Avatar: "", Token: ""}, err
+	}
+
+	return &pb.UpdateAvatarReply{Token: req.GetToken(), Avatar: req.GetAvatar()}, nil
+}

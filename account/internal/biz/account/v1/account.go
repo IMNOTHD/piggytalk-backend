@@ -40,6 +40,7 @@ type AccountRepo interface {
 	CreateUserLoginToken(ctx context.Context, t *TokenInfo) (*TokenInfo, error)
 	CheckUserPassword(ctx context.Context, a *Account) (*Account, error)
 	CheckToken(ctx context.Context, t *TokenInfo) (*TokenInfo, error)
+	UpdateAvatar(ctx context.Context, uuid string, avatar string) error
 }
 
 type AccountUsecase struct {
@@ -52,6 +53,10 @@ func NewAccountUsecase(repo AccountRepo, logger log.Logger) *AccountUsecase {
 		repo: repo,
 		log:  log.NewHelper(log.With(logger, "module", "account/biz/account/v1", "caller", log.DefaultCaller)),
 	}
+}
+
+func (uc *AccountUsecase) UpdateAvatar(ctx context.Context, uuid string, avatar string) error {
+	return uc.repo.UpdateAvatar(ctx, uuid, avatar)
 }
 
 func (uc *AccountUsecase) GetUserInfo(ctx context.Context, uuids []string) ([]*NoSecretUserInfo, error) {

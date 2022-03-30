@@ -42,6 +42,31 @@ func NewAccountUsecase(logger log.Logger) *AccountUsecase {
 	}
 }
 
+func (au *AccountUsecase) UpdateAvatar(ctx context.Context, token string, avatar string) error {
+	conn, err := kit.ServiceConn(kit.AccountEndpoint)
+	if err != nil {
+		au.log.Error(err)
+		return err
+	}
+	c := v1.NewAccountClient(conn)
+
+	ar, err := c.UpdateAvatar(ctx, &v1.UpdateAvatarRequest{
+		Token:  token,
+		Avatar: avatar,
+	})
+	if err != nil {
+		au.log.Error(err)
+		return err
+	}
+
+	if ar.GetToken() == "" {
+		au.log.Error("token failed")
+		return errors.New(403, "FORBIDDEN", "FORBIDDEN")
+	}
+
+	return nil
+}
+
 func (au *AccountUsecase) Login(ctx context.Context, a *Account) (*Account, Token, error) {
 	conn, err := kit.ServiceConn(kit.AccountEndpoint)
 	if err != nil {

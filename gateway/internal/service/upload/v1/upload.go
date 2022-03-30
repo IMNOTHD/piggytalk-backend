@@ -12,9 +12,10 @@ import (
 )
 
 const (
-	url    = "https://i.impiggy.cn/api/1/upload/"
-	token  = "8b86e6f30a68d4bac5430a8d21a93f51"
-	format = "json"
+	url          = "https://i.impiggy.cn/api/1/upload/"
+	token        = "8b86e6f30a68d4bac5430a8d21a93f51"
+	format       = "json"
+	cheveretoUrl = url + "?key=" + token + "&format=" + format
 )
 
 type UploadService struct {
@@ -32,6 +33,7 @@ func NewUploadService(logger log.Logger) *UploadService {
 func (s *UploadService) ImgUpload(conn pb.Upload_ImgUploadServer) error {
 	var buffer bytes.Buffer
 
+	// TODO 传输太慢, 打断
 	for {
 		req, err := conn.Recv()
 		if err == io.EOF {
@@ -46,12 +48,10 @@ func (s *UploadService) ImgUpload(conn pb.Upload_ImgUploadServer) error {
 		}
 	}
 
-	u := url + "?key=" + token + "&format=" + format
-
 	args := &fasthttp.Args{}
 	args.AddBytesV("source", buffer.Bytes())
 
-	stat, resp, err := fasthttp.Post(nil, u, args)
+	stat, resp, err := fasthttp.Post(nil, cheveretoUrl, args)
 
 	if err != nil {
 		s.log.Error(err)
@@ -75,6 +75,8 @@ func (s *UploadService) ImgUpload(conn pb.Upload_ImgUploadServer) error {
 		})
 		return err
 	}
+
+	s.log.Infof("success upload url: %s", r.Image.URL)
 
 	return conn.SendAndClose(&pb.ImgUploadResponse{
 		Code:    pb.Code_OK,
@@ -141,10 +143,10 @@ type CheveretoResp struct {
 			URL       string `json:"url"`
 			Size      string `json:"size"`
 		} `json:"thumb"`
-		SizeFormatted      string `json:"size_formatted"`
-		DisplayURL         string `json:"display_url"`
-		DisplayWidth       string `json:"display_width"`
-		DisplayHeight      string `json:"display_height"`
+		SizeFormatted string `json:"size_formatted"`
+		DisplayURL    string `json:"display_url"`
+		//DisplayWidth       string `json:"display_width"`
+		//DisplayHeight      string `json:"display_height"`
 		ViewsLabel         string `json:"views_label"`
 		LikesLabel         string `json:"likes_label"`
 		HowLongAgo         string `json:"how_long_ago"`
