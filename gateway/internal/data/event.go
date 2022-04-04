@@ -33,9 +33,10 @@ const ()
 
 // event type
 const (
-	_addFriend    = "AddFriend"
-	_createFriend = "CreateFriend"
-	_deleteFriend = "DeleteFriend"
+	_addFriend        = "AddFriend"
+	_createFriend     = "CreateFriend"
+	_deleteFriend     = "DeleteFriend"
+	_ackFriendMessage = "AckFriendMessage"
 )
 
 func (r *eventRepo) RabbitMqLister(ctx context.Context) (func(), func()) {
@@ -98,6 +99,39 @@ func (r *eventRepo) RabbitMqLister(ctx context.Context) (func(), func()) {
 	}
 
 	return messageListener, eventListener
+}
+
+func (r *eventRepo) AckFriendMessage(ctx context.Context, uid string, eventId []int64) error {
+	type body struct {
+		Uid     string
+		EventId int64
+	}
+	for _, id := range eventId {
+		b := body{
+			Uid:     uid,
+			EventId: id,
+		}
+		x, err := json.Marshal(b)
+		if err != nil {
+			r.log.Error(err)
+			return err
+		}
+
+		err = r.data.Rmq.Channel.Publish(
+			_eventTopicEx,
+			_eventMasterMQ,
+			false,
+			false,
+			amqp.Publishing{
+				ContentType: "text/plain",
+				Type:        _ackFriendMessage,
+				Body:        x,
+			})
+		if err != nil {
+			r.log.Error(err)
+		}
+	}
+	return nil
 }
 
 func (r *eventRepo) SendDeleteFriend(ctx context.Context, uid string, deleteUuid string, sid int64, eventUuid string) error {

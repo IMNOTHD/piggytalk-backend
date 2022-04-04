@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.19.1
-// source: api/message/v1/message.proto
+// source: internal/api/message/message/v1/message.proto
 
 package v1
 
@@ -24,6 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type MessageClient interface {
 	CreateMessage(ctx context.Context, in *CreateMessageRequest, opts ...grpc.CallOption) (*CreateMessageReply, error)
 	SelectFriendRequest(ctx context.Context, in *SelectFriendRequestRequest, opts ...grpc.CallOption) (*SelectFriendRequestReply, error)
+	ListFriendRequest(ctx context.Context, in *ListFriendRequestRequest, opts ...grpc.CallOption) (*ListFriendRequestReply, error)
 }
 
 type messageClient struct {
@@ -52,12 +53,22 @@ func (c *messageClient) SelectFriendRequest(ctx context.Context, in *SelectFrien
 	return out, nil
 }
 
+func (c *messageClient) ListFriendRequest(ctx context.Context, in *ListFriendRequestRequest, opts ...grpc.CallOption) (*ListFriendRequestReply, error) {
+	out := new(ListFriendRequestReply)
+	err := c.cc.Invoke(ctx, "/message.api.message.v1.Message/ListFriendRequest", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MessageServer is the server API for Message service.
 // All implementations must embed UnimplementedMessageServer
 // for forward compatibility
 type MessageServer interface {
 	CreateMessage(context.Context, *CreateMessageRequest) (*CreateMessageReply, error)
 	SelectFriendRequest(context.Context, *SelectFriendRequestRequest) (*SelectFriendRequestReply, error)
+	ListFriendRequest(context.Context, *ListFriendRequestRequest) (*ListFriendRequestReply, error)
 	mustEmbedUnimplementedMessageServer()
 }
 
@@ -70,6 +81,9 @@ func (UnimplementedMessageServer) CreateMessage(context.Context, *CreateMessageR
 }
 func (UnimplementedMessageServer) SelectFriendRequest(context.Context, *SelectFriendRequestRequest) (*SelectFriendRequestReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SelectFriendRequest not implemented")
+}
+func (UnimplementedMessageServer) ListFriendRequest(context.Context, *ListFriendRequestRequest) (*ListFriendRequestReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListFriendRequest not implemented")
 }
 func (UnimplementedMessageServer) mustEmbedUnimplementedMessageServer() {}
 
@@ -120,6 +134,24 @@ func _Message_SelectFriendRequest_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Message_ListFriendRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListFriendRequestRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MessageServer).ListFriendRequest(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/message.api.message.v1.Message/ListFriendRequest",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MessageServer).ListFriendRequest(ctx, req.(*ListFriendRequestRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Message_ServiceDesc is the grpc.ServiceDesc for Message service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -135,7 +167,11 @@ var Message_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "SelectFriendRequest",
 			Handler:    _Message_SelectFriendRequest_Handler,
 		},
+		{
+			MethodName: "ListFriendRequest",
+			Handler:    _Message_ListFriendRequest_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "api/message/v1/message.proto",
+	Metadata: "internal/api/message/message/v1/message.proto",
 }

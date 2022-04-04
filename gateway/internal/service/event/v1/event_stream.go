@@ -474,6 +474,43 @@ func (s *EventStreamService) EventStream(conn pb.EventStream_EventStreamServer) 
 					if err != nil {
 						s.log.Error(err)
 					}
+				case *pb.EventStreamRequest_ListFriendRequestRequest:
+					if uid == "" {
+						continue
+					}
+
+					r, err := s.eu.ListFriendRequest(ctx, uid)
+					if err != nil {
+						s.log.Error(err)
+						err = conn.Send(&pb.EventStreamResponse{
+							Token:    req.GetToken(),
+							Code:     pb.Code_UNAVAILABLE,
+							Messages: "服务错误",
+							Event:    &pb.EventStreamResponse_ListFriendRequestResponse{},
+						})
+						if err != nil {
+							s.log.Error(err)
+						}
+					}
+
+					err = conn.Send(&pb.EventStreamResponse{
+						Token:    req.GetToken(),
+						Code:     pb.Code_OK,
+						Messages: "",
+						Event: &pb.EventStreamResponse_ListFriendRequestResponse{
+							ListFriendRequestResponse: &pb.ListFriendRequestResponse{AddFriendMessage: r},
+						},
+					})
+					if err != nil {
+						s.log.Error(err)
+					}
+				case *pb.EventStreamRequest_AckFriendMessageRequest:
+					// 不需要可靠, 发出即可
+					if uid == "" {
+						continue
+					}
+
+					_ = s.eu.AckFriendMessage(ctx, uid, req.GetAckFriendMessageRequest().GetEventId())
 				}
 			}
 

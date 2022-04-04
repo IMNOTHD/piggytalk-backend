@@ -48,3 +48,12 @@ func (s *MessageService) SelectFriendRequest(ctx context.Context, req *pb.Select
 		UserBUuid: b,
 	}, nil
 }
+
+func (s *MessageService) ListFriendRequest(ctx context.Context, req *pb.ListFriendRequestRequest) (*pb.ListFriendRequestReply, error) {
+	r, err := s.eu.ListFriendRequest(ctx, req.GetUuid())
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.ListFriendRequestReply{AddFriendMessage: r}, nil
+}

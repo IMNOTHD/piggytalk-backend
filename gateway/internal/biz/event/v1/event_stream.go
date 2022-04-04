@@ -29,6 +29,7 @@ type EventRepo interface {
 	SelectUid(ctx context.Context, sessionId string) (string, error)
 	UpdateBeatHeart(ctx context.Context, sessionId string, expiration time.Duration) error
 	SelectBeatHeart(ctx context.Context, sessionId string) (string, error)
+	AckFriendMessage(ctx context.Context, uid string, eventId []int64) error
 }
 
 type SessionId string
@@ -47,6 +48,45 @@ func NewEventUsecase(repo EventRepo, logger log.Logger) *EventUsecase {
 
 func (uc *EventUsecase) RabbitMqListener(ctx context.Context) (func(), func()) {
 	return uc.repo.RabbitMqLister(ctx)
+}
+
+func (uc *EventUsecase) AckFriendMessage(ctx context.Context, uid string, eventId []int64) error {
+	return uc.repo.AckFriendMessage(ctx, uid, eventId)
+}
+
+func (uc *EventUsecase) ListFriendRequest(ctx context.Context, uid string) ([]*pb.ListFriendRequestResponse_AddFriendMessage, error) {
+	conn, err := kit.ServiceConn(kit.MessageEndpoint)
+	if err != nil {
+		uc.log.Error(err)
+		return nil, err
+	}
+
+	x := mV1.NewMessageClient(conn)
+	r, err := x.ListFriendRequest(ctx, &mV1.ListFriendRequestRequest{Uuid: uid})
+	if err != nil {
+		uc.log.Error(err)
+		return nil, err
+	}
+
+	ackConvert := func(k string) bool {
+		if k == "TRUE" {
+			return true
+		}
+		return false
+	}
+
+	k := make([]*pb.ListFriendRequestResponse_AddFriendMessage, 0)
+	for _, message := range r.GetAddFriendMessage() {
+		k = append(k, &pb.ListFriendRequestResponse_AddFriendMessage{
+			EventUuid:    message.GetEventUuid(),
+			EventId:      message.GetEventId(),
+			Ack:          ackConvert(message.GetAck()),
+			ReceiverUuid: message.GetReceiverUuid(),
+			SenderUuid:   message.GetSenderUuid(),
+		})
+	}
+
+	return k, nil
 }
 
 func (uc *EventUsecase) ListUserInfo(ctx context.Context, uuids []string) ([]*pb.ListUserInfoResponse_UserInfo, error) {

@@ -10,6 +10,7 @@ import (
 	v1 "message/internal/biz/message/v1"
 	"message/internal/kit"
 
+	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
@@ -34,9 +35,10 @@ const (
 
 // event type
 const (
-	_addFriend    = "AddFriend"
-	_createFriend = "CreateFriend"
-	_deleteFriend = "DeleteFriend"
+	_addFriend        = "AddFriend"
+	_createFriend     = "CreateFriend"
+	_deleteFriend     = "DeleteFriend"
+	_ackFriendMessage = "AckFriendMessage"
 )
 
 func NewMessageRepo(data *Data, logger log.Logger) v1.MessageRepo {
@@ -56,8 +58,10 @@ func NewMessageRepo(data *Data, logger log.Logger) v1.MessageRepo {
 }
 
 type FriendAddMessage struct {
-	MessageId int64     `gorm:"primaryKey"`
-	UserA     uuid.UUID `gorm:"not null;index:idx_sender"`
+	EventId int64 `gorm:"primaryKey"`
+	// UserA Sender
+	UserA uuid.UUID `gorm:"not null;index:idx_sender"`
+	// UserB Receiver
 	UserB     uuid.UUID `gorm:"not null;index:idx_receiver"`
 	Type      string    `gorm:"type:enum('WAITING', 'SUCCESS', 'DENIED');default:'WAITING'"`
 	Ack       string    `gorm:"type:enum('FALSE', 'TRUE');default:'FALSE'"`
@@ -140,11 +144,52 @@ func (r *messageRepo) RabbitMqLister(ctx context.Context) (func(), func()) {
 				if err != nil {
 					r.log.Error(err)
 				}
+			case _ackFriendMessage:
+				err := r.AckFriendRequest(ctx, m.Body)
+				if err != nil {
+					r.log.Error(err)
+				}
 			}
 		}
 	}
 
 	return messageListener, eventListener
+}
+
+func (r *messageRepo) AckFriendRequest(ctx context.Context, body []byte) error {
+	type b struct {
+		Uid     string
+		EventId int64
+	}
+	var x b
+	err := json.Unmarshal(body, &x)
+	if err != nil {
+		r.log.Error(err)
+		return err
+	}
+
+	ru := r.data.Db.Where("event_id = ? and user_b = ?", x.EventId, uuid.MustParse(x.Uid)).Update("ack", "TRUE")
+	if ru.Error != nil {
+		r.log.Error(ru.Error)
+		return ru.Error
+	}
+
+	return nil
+}
+
+func (r *messageRepo) ListFriendRequest(ctx context.Context, uuid string) ([]*FriendAddMessage, error) {
+	var fm []*FriendAddMessage
+	ru := r.data.Db.
+		Raw("? UNION ALL ?",
+			r.data.Db.Select([]string{"event_id", "user_a", "user_b", "type", "ack", "event_uuid"}).Where("user_a = ?", uuid).Model(&FriendAddMessage{}),
+			r.data.Db.Select([]string{"event_id", "user_a", "user_b", "type", "ack", "event_uuid"}).Where("user_b = ?", uuid).Model(&FriendAddMessage{}),
+		).Scan(&fm)
+	if ru.Error != nil && !errors.Is(ru.Error, gorm.ErrRecordNotFound) {
+		r.log.Error(ru.Error)
+		return nil, ru.Error
+	}
+
+	return fm, nil
 }
 
 func (r *messageRepo) SingleMessage(ctx context.Context, body []byte, mid string) error {
@@ -277,7 +322,7 @@ func (r *messageRepo) AddFriend(ctx context.Context, body []byte, mid string) er
 	}
 
 	ru := r.data.Db.Clauses(clause.Insert{Modifier: "IGNORE"}).Create(&FriendAddMessage{
-		MessageId: m,
+		EventId:   m,
 		UserA:     uuid.MustParse(x.Uid),
 		UserB:     uuid.MustParse(x.ReceiverUuid),
 		Type:      "WAITING",

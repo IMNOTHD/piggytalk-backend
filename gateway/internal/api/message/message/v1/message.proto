@@ -9,6 +9,7 @@ option java_package = "api.message.v1";
 service Message {
   rpc CreateMessage (CreateMessageRequest) returns (CreateMessageReply);
   rpc SelectFriendRequest (SelectFriendRequestRequest) returns (SelectFriendRequestReply);
+  rpc ListFriendRequest (ListFriendRequestRequest) returns (ListFriendRequestReply);
 }
 
 message CreateMessageRequest {}
@@ -18,6 +19,22 @@ message SelectFriendRequestRequest {
   string eventUuid = 1;
 }
 message SelectFriendRequestReply {
-	string userAUuid = 1;
+  string userAUuid = 1;
   string userBUuid = 2;
+}
+
+message ListFriendRequestRequest {
+  string uuid = 1;
+}
+
+message ListFriendRequestReply {
+  message AddFriendMessage {
+    string eventUuid = 1;
+    int64 eventId = 2;
+    string ack = 3;
+    string receiverUuid = 4;
+    string senderUuid = 5;
+    string type = 6;
+  }
+  repeated AddFriendMessage addFriendMessage = 1;
 }
