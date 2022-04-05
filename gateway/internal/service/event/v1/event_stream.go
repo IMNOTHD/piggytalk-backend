@@ -123,8 +123,12 @@ func (s *EventStreamService) EventStream(conn pb.EventStream_EventStreamServer) 
 				}
 			}
 
-			ReceiveEventMq[uid] = make(chan Message, _commodityLoad)
-			ReceiveMessageMq[uid] = make(chan Message, _commodityLoad)
+			if ReceiveEventMq[uid] != nil {
+				ReceiveEventMq[uid] = make(chan Message, _commodityLoad)
+			}
+			if ReceiveMessageMq[uid] != nil {
+				ReceiveMessageMq[uid] = make(chan Message, _commodityLoad)
+			}
 
 			for {
 				select {
@@ -576,6 +580,8 @@ func (s *EventStreamService) EventStream(conn pb.EventStream_EventStreamServer) 
 		if req == nil {
 			continue
 		}
+
+		s.log.Infof("uid: %s, req: %s", uid, req.String())
 
 		f, u, err := s.eu.CheckToken(ctx, req.GetToken())
 		if err != nil {

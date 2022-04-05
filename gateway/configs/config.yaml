@@ -1,10 +1,10 @@
 server:
   http:
     addr: 0.0.0.0:8080
-    timeout: 1s
+    timeout: 10s
   grpc:
     addr: 0.0.0.0:9090
-    timeout: 1s
+    timeout: 10s
 data:
   redis:
     addr: 127.0.0.1:6379

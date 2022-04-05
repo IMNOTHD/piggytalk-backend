@@ -4,7 +4,6 @@ import (
 	"context"
 
 	pb "message/api/message/v1"
-	"message/internal/data"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -12,12 +11,21 @@ import (
 type MessageRepo interface {
 	RabbitMqLister(ctx context.Context) (func(), func())
 	SelectFriendRequest(ctx context.Context, eventUuid string) (string, string, error)
-	ListFriendRequest(ctx context.Context, uuid string) ([]*data.FriendAddMessage, error)
+	ListFriendRequest(ctx context.Context, uuid string, startId int64, count int64) ([]*FriendAddMessage, error)
 }
 
 type MessageUsecase struct {
 	repo MessageRepo
 	log  *log.Helper
+}
+
+type FriendAddMessage struct {
+	EventId      int64
+	ReceiverUuid string
+	SenderUuid   string
+	Type         string
+	Ack          string
+	EventUuid    string
 }
 
 func NewMessageUsecase(repo MessageRepo, logger log.Logger) *MessageUsecase {
@@ -35,8 +43,8 @@ func (uc *MessageUsecase) SelectFriendRequest(ctx context.Context, eventUuid str
 	return uc.repo.SelectFriendRequest(ctx, eventUuid)
 }
 
-func (uc *MessageUsecase) ListFriendRequest(ctx context.Context, uuid string) ([]*pb.ListFriendRequestReply_AddFriendMessage, error) {
-	r, err := uc.repo.ListFriendRequest(ctx, uuid)
+func (uc *MessageUsecase) ListFriendRequest(ctx context.Context, uuid string, startId int64, count int64) ([]*pb.ListFriendRequestReply_AddFriendMessage, error) {
+	r, err := uc.repo.ListFriendRequest(ctx, uuid, startId, count)
 	if err != nil {
 		return nil, err
 	}
@@ -47,8 +55,8 @@ func (uc *MessageUsecase) ListFriendRequest(ctx context.Context, uuid string) ([
 			EventUuid:    message.EventUuid,
 			EventId:      message.EventId,
 			Ack:          message.Ack,
-			ReceiverUuid: message.UserB.String(),
-			SenderUuid:   message.UserA.String(),
+			ReceiverUuid: message.ReceiverUuid,
+			SenderUuid:   message.SenderUuid,
 			Type:         message.Type,
 		})
 	}

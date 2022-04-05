@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"math"
 	"strconv"
 	"time"
 
@@ -65,7 +66,7 @@ type FriendAddMessage struct {
 	UserB     uuid.UUID `gorm:"not null;index:idx_receiver"`
 	Type      string    `gorm:"type:enum('WAITING', 'SUCCESS', 'DENIED');default:'WAITING'"`
 	Ack       string    `gorm:"type:enum('FALSE', 'TRUE');default:'FALSE'"`
-	EventUuid string    `gorm:"uniqueIndex:idx_event_uuid"`
+	EventUuid uuid.UUID `gorm:"index:idx_event_uuid"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
@@ -84,7 +85,7 @@ type SingleMessage struct {
 	// 表示在与谁聊天
 	Talk        uuid.UUID `gorm:"not null;index:idx_talk"`
 	Message     string
-	MessageUuid string `gorm:"uniqueIndex:idx_message_uuid"`
+	MessageUuid uuid.UUID `gorm:"index:idx_message_uuid"`
 	AlreadyRead bool
 	CreatedAt   time.Time
 }
@@ -177,19 +178,33 @@ func (r *messageRepo) AckFriendRequest(ctx context.Context, body []byte) error {
 	return nil
 }
 
-func (r *messageRepo) ListFriendRequest(ctx context.Context, uuid string) ([]*FriendAddMessage, error) {
+func (r *messageRepo) ListFriendRequest(ctx context.Context, uuid string, startId int64, count int64) ([]*v1.FriendAddMessage, error) {
+	if count <= 0 {
+		count = math.MaxInt64
+	}
+
 	var fm []*FriendAddMessage
 	ru := r.data.Db.
-		Raw("? UNION ALL ?",
-			r.data.Db.Select([]string{"event_id", "user_a", "user_b", "type", "ack", "event_uuid"}).Where("user_a = ?", uuid).Model(&FriendAddMessage{}),
-			r.data.Db.Select([]string{"event_id", "user_a", "user_b", "type", "ack", "event_uuid"}).Where("user_b = ?", uuid).Model(&FriendAddMessage{}),
-		).Scan(&fm)
+		Raw("select `event_id`, `user_a`, `user_b`, `type`, `ack`, `event_uuid` from `friend_add_messages` where `event_id` < ? and (`user_a` = ? or `user_b` = ?) order by `event_id` desc limit ?",
+			startId, uuid, uuid, count).Scan(&fm)
 	if ru.Error != nil && !errors.Is(ru.Error, gorm.ErrRecordNotFound) {
 		r.log.Error(ru.Error)
 		return nil, ru.Error
 	}
 
-	return fm, nil
+	var k []*v1.FriendAddMessage
+	for _, message := range fm {
+		k = append(k, &v1.FriendAddMessage{
+			EventUuid:    message.EventUuid.String(),
+			EventId:      message.EventId,
+			Ack:          message.Ack,
+			ReceiverUuid: message.UserB.String(),
+			SenderUuid:   message.UserA.String(),
+			Type:         message.Type,
+		})
+	}
+
+	return k, nil
 }
 
 func (r *messageRepo) SingleMessage(ctx context.Context, body []byte, mid string) error {
@@ -215,28 +230,40 @@ func (r *messageRepo) SingleMessage(ctx context.Context, body []byte, mid string
 	// 事务, 写扩散
 	ru := r.data.Db.Transaction(func(tx *gorm.DB) error {
 		// 发送者消息记录
-		a := tx.Table(_singleMessagePrefix + x.SenderUuid).Clauses(clause.Insert{Modifier: "IGNORE"}).Create(&SingleMessage{
+		senderTableName := _singleMessagePrefix + x.SenderUuid
+		a := tx.Table(senderTableName).Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: "message_uuid"}},
+			DoNothing: true,
+		}).Create(&SingleMessage{
 			MessageId:   m,
 			SenderUuid:  uuid.MustParse(x.SenderUuid),
 			Talk:        uuid.MustParse(x.Talk),
 			Message:     x.Message,
-			MessageUuid: x.MessageUuid,
+			MessageUuid: uuid.MustParse(x.MessageUuid),
 			AlreadyRead: true,
 		})
+		//tx.Exec("INSERT INTO ? (`message_id`, `sender_uuid`, `talk`, `message`, `message_uuid`, `already_read`) SELECT ?, ?, ?, ?, ?, ? FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM ? WHERE `message_uuid` = ?)",
+		//	senderTableName, m, uuid.MustParse(x.SenderUuid), uuid.MustParse(x.Talk), x.Message, uuid.MustParse(x.MessageUuid), true, uuid.MustParse(x.MessageUuid))
 		if a.Error != nil {
 			r.log.Error(a.Error)
 			return a.Error
 		}
 
 		// 接收者消息记录
-		b := tx.Table(_singleMessagePrefix + x.Talk).Clauses(clause.Insert{Modifier: "IGNORE"}).Create(&SingleMessage{
+		talkTableName := _singleMessagePrefix + x.Talk
+		b := tx.Table(talkTableName).Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: "message_uuid"}},
+			DoNothing: true,
+		}).Create(&SingleMessage{
 			MessageId:   m,
 			SenderUuid:  uuid.MustParse(x.SenderUuid),
 			Talk:        uuid.MustParse(x.SenderUuid),
 			Message:     x.Message,
-			MessageUuid: x.MessageUuid,
+			MessageUuid: uuid.MustParse(x.MessageUuid),
 			AlreadyRead: false,
 		})
+		//tx.Exec("INSERT INTO ? (`message_id`, `sender_uuid`, `talk`, `message`, `message_uuid`, `already_read`) SELECT ?, ?, ?, ?, ?, ? FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM ? WHERE `message_uuid` = ?)",
+		//	talkTableName, m, uuid.MustParse(x.SenderUuid), uuid.MustParse(x.Talk), x.Message, uuid.MustParse(x.MessageUuid), true, uuid.MustParse(x.MessageUuid))
 		if b.Error != nil {
 			r.log.Error(b.Error)
 			return b.Error
@@ -291,7 +318,7 @@ func (r *messageRepo) SingleMessage(ctx context.Context, body []byte, mid string
 func (r *messageRepo) SelectFriendRequest(ctx context.Context, eventUuid string) (string, string, error) {
 	var f FriendAddMessage
 
-	ru := r.data.Db.Where(&FriendAddMessage{EventUuid: eventUuid}).Last(&f)
+	ru := r.data.Db.Where(&FriendAddMessage{EventUuid: uuid.MustParse(eventUuid)}).Last(&f)
 	if ru.Error != nil {
 		r.log.Error(ru.Error)
 		return "", "", ru.Error
@@ -321,12 +348,15 @@ func (r *messageRepo) AddFriend(ctx context.Context, body []byte, mid string) er
 		return err
 	}
 
-	ru := r.data.Db.Clauses(clause.Insert{Modifier: "IGNORE"}).Create(&FriendAddMessage{
+	ru := r.data.Db.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "event_uuid"}},
+		DoNothing: true,
+	}).Create(&FriendAddMessage{
 		EventId:   m,
 		UserA:     uuid.MustParse(x.Uid),
 		UserB:     uuid.MustParse(x.ReceiverUuid),
 		Type:      "WAITING",
-		EventUuid: x.EventUuid,
+		EventUuid: uuid.MustParse(x.EventUuid),
 	})
 	if ru.Error != nil {
 		r.log.Error(err)

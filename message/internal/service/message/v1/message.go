@@ -50,7 +50,7 @@ func (s *MessageService) SelectFriendRequest(ctx context.Context, req *pb.Select
 }
 
 func (s *MessageService) ListFriendRequest(ctx context.Context, req *pb.ListFriendRequestRequest) (*pb.ListFriendRequestReply, error) {
-	r, err := s.eu.ListFriendRequest(ctx, req.GetUuid())
+	r, err := s.eu.ListFriendRequest(ctx, req.GetUuid(), req.GetStartEventId(), req.GetCount())
 	if err != nil {
 		return nil, err
 	}

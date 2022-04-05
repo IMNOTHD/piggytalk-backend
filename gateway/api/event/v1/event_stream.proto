@@ -125,6 +125,9 @@ message ListUserInfoRequest {
 // 列好友请求列表
 message ListFriendRequestRequest {
   string token = 1;
+  // 从头查写0
+  int64 startEventId = 2;
+  int64 count = 3;
 }
 
 message AckFriendMessageRequest {

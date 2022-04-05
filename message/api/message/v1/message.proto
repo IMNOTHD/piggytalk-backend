@@ -25,6 +25,9 @@ message SelectFriendRequestReply {
 
 message ListFriendRequestRequest {
   string uuid = 1;
+  // 从头查写0
+  int64 startEventId = 2;
+  int64 count = 3;
 }
 
 message ListFriendRequestReply {
