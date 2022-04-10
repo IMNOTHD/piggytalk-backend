@@ -14,3 +14,9 @@
 [x] 头像设置  
 [&ensp;] 修改密码  
 [&ensp;] 用户设置  
+[&ensp;] 修改messageId和eventId的生成流程
+```
+具体流程如下:
+1. client发出message后, 对该uuid陷入等待, 1s检查一次是否ack, 3s后提示是否重发
+2. 到达message再生成id, 并把id发回, 并用uuid做幂等
+```
