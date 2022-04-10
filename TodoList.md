@@ -20,3 +20,4 @@
 1. client发出message后, 对该uuid陷入等待, 1s检查一次是否ack, 3s后提示是否重发
 2. 到达message再生成id, 并把id发回, 并用uuid做幂等
 ```
+[&ensp;] 修改gorm的log插件
