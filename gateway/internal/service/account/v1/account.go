@@ -98,6 +98,23 @@ func (s *AccountService) UpdateAvatar(ctx context.Context, req *pb.UpdateAvatarR
 	}, nil
 }
 
+func (s *AccountService) SearchUuid(ctx context.Context, req *pb.SearchUuidRequest) (*pb.SearchUuidReply, error) {
+	r, err := s.au.SearchUuid(ctx, req.GetUuid())
+	if err != nil {
+		s.log.Error(err)
+		return nil, errorCheck(err)
+	}
+	if r != nil {
+		return &pb.SearchUuidReply{
+			Uuid:     req.GetUuid(),
+			Avatar:   r.Avatar,
+			Nickname: r.Nickname,
+		}, nil
+	}
+
+	return nil, nil
+}
+
 // 拦截错误, 防止把内部错误带出去
 func errorCheck(err error) error {
 	e := errors.FromError(err)

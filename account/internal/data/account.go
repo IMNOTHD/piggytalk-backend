@@ -80,7 +80,7 @@ func (r *accountRepo) UpdateAvatar(ctx context.Context, uuid string, avatar stri
 func (r *accountRepo) SelectUserInfo(ctx context.Context, uuids []string) ([]*v1.NoSecretUserInfo, error) {
 	var userInfos []*UserInfo
 
-	ru := r.data.Db.Find(&userInfos, uuids)
+	ru := r.data.Db.Where("uuid IN ?", uuids).Find(&userInfos)
 	if ru.Error != nil && !errors.Is(ru.Error, gorm.ErrRecordNotFound) {
 		r.log.Error(ru.Error)
 		return nil, ru.Error

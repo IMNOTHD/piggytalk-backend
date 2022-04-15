@@ -20,6 +20,7 @@ const _ = http.SupportPackageIsVersion1
 type AccountHTTPServer interface {
 	Login(context.Context, *LoginRequest) (*LoginReply, error)
 	Register(context.Context, *RegisterRequest) (*RegisterReply, error)
+	SearchUuid(context.Context, *SearchUuidRequest) (*SearchUuidReply, error)
 	UpdateAvatar(context.Context, *UpdateAvatarRequest) (*UpdateAvatarReply, error)
 }
 
@@ -28,6 +29,7 @@ func RegisterAccountHTTPServer(s *http.Server, srv AccountHTTPServer) {
 	r.POST("/account/v1/login", _Account_Login0_HTTP_Handler(srv))
 	r.POST("/account/v1/register", _Account_Register0_HTTP_Handler(srv))
 	r.POST("/account/v1/avatar", _Account_UpdateAvatar0_HTTP_Handler(srv))
+	r.GET("/account/v1/search", _Account_SearchUuid0_HTTP_Handler(srv))
 }
 
 func _Account_Login0_HTTP_Handler(srv AccountHTTPServer) func(ctx http.Context) error {
@@ -87,9 +89,29 @@ func _Account_UpdateAvatar0_HTTP_Handler(srv AccountHTTPServer) func(ctx http.Co
 	}
 }
 
+func _Account_SearchUuid0_HTTP_Handler(srv AccountHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in SearchUuidRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, "/gateway.api.account.v1.Account/SearchUuid")
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.SearchUuid(ctx, req.(*SearchUuidRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*SearchUuidReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type AccountHTTPClient interface {
 	Login(ctx context.Context, req *LoginRequest, opts ...http.CallOption) (rsp *LoginReply, err error)
 	Register(ctx context.Context, req *RegisterRequest, opts ...http.CallOption) (rsp *RegisterReply, err error)
+	SearchUuid(ctx context.Context, req *SearchUuidRequest, opts ...http.CallOption) (rsp *SearchUuidReply, err error)
 	UpdateAvatar(ctx context.Context, req *UpdateAvatarRequest, opts ...http.CallOption) (rsp *UpdateAvatarReply, err error)
 }
 
@@ -121,6 +143,19 @@ func (c *AccountHTTPClientImpl) Register(ctx context.Context, in *RegisterReques
 	opts = append(opts, http.Operation("/gateway.api.account.v1.Account/Register"))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, err
+}
+
+func (c *AccountHTTPClientImpl) SearchUuid(ctx context.Context, in *SearchUuidRequest, opts ...http.CallOption) (*SearchUuidReply, error) {
+	var out SearchUuidReply
+	pattern := "/account/v1/search"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation("/gateway.api.account.v1.Account/SearchUuid"))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {
 		return nil, err
 	}

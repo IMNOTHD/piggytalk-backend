@@ -42,6 +42,30 @@ func NewAccountUsecase(logger log.Logger) *AccountUsecase {
 	}
 }
 
+func (au *AccountUsecase) SearchUuid(ctx context.Context, uuid string) (*Account, error) {
+	conn, err := kit.ServiceConn(kit.AccountEndpoint)
+	if err != nil {
+		au.log.Error(err)
+		return nil, err
+	}
+	c := v1.NewAccountClient(conn)
+
+	r, err := c.GetUserInfo(ctx, &v1.GetUserInfoRequest{Uuid: []string{uuid}})
+	if err != nil {
+		au.log.Error(err)
+		return nil, err
+	}
+
+	if len(r.GetUserinfo()) != 0 {
+		return &Account{
+			Nickname: r.Userinfo[0].Nickname,
+			Avatar:   r.Userinfo[0].Avatar,
+		}, nil
+	} else {
+		return nil, nil
+	}
+}
+
 func (au *AccountUsecase) UpdateAvatar(ctx context.Context, token string, avatar string) error {
 	conn, err := kit.ServiceConn(kit.AccountEndpoint)
 	if err != nil {

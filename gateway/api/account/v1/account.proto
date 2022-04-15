@@ -27,6 +27,21 @@ service Account {
       body: "*"
     };
   }
+  rpc SearchUuid (SearchUuidRequest) returns (SearchUuidReply) {
+    option (google.api.http) = {
+      get: "/account/v1/search"
+    };
+  }
+}
+
+message SearchUuidRequest {
+  string uuid = 1;
+}
+
+message SearchUuidReply {
+  string uuid = 1;
+  string avatar = 2;
+  string nickname = 3;
 }
 
 message LoginRequest {

@@ -25,6 +25,7 @@ type AccountClient interface {
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginReply, error)
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterReply, error)
 	UpdateAvatar(ctx context.Context, in *UpdateAvatarRequest, opts ...grpc.CallOption) (*UpdateAvatarReply, error)
+	SearchUuid(ctx context.Context, in *SearchUuidRequest, opts ...grpc.CallOption) (*SearchUuidReply, error)
 }
 
 type accountClient struct {
@@ -62,6 +63,15 @@ func (c *accountClient) UpdateAvatar(ctx context.Context, in *UpdateAvatarReques
 	return out, nil
 }
 
+func (c *accountClient) SearchUuid(ctx context.Context, in *SearchUuidRequest, opts ...grpc.CallOption) (*SearchUuidReply, error) {
+	out := new(SearchUuidReply)
+	err := c.cc.Invoke(ctx, "/gateway.api.account.v1.Account/SearchUuid", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AccountServer is the server API for Account service.
 // All implementations must embed UnimplementedAccountServer
 // for forward compatibility
@@ -69,6 +79,7 @@ type AccountServer interface {
 	Login(context.Context, *LoginRequest) (*LoginReply, error)
 	Register(context.Context, *RegisterRequest) (*RegisterReply, error)
 	UpdateAvatar(context.Context, *UpdateAvatarRequest) (*UpdateAvatarReply, error)
+	SearchUuid(context.Context, *SearchUuidRequest) (*SearchUuidReply, error)
 	mustEmbedUnimplementedAccountServer()
 }
 
@@ -84,6 +95,9 @@ func (UnimplementedAccountServer) Register(context.Context, *RegisterRequest) (*
 }
 func (UnimplementedAccountServer) UpdateAvatar(context.Context, *UpdateAvatarRequest) (*UpdateAvatarReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateAvatar not implemented")
+}
+func (UnimplementedAccountServer) SearchUuid(context.Context, *SearchUuidRequest) (*SearchUuidReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SearchUuid not implemented")
 }
 func (UnimplementedAccountServer) mustEmbedUnimplementedAccountServer() {}
 
@@ -152,6 +166,24 @@ func _Account_UpdateAvatar_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Account_SearchUuid_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SearchUuidRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccountServer).SearchUuid(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/gateway.api.account.v1.Account/SearchUuid",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccountServer).SearchUuid(ctx, req.(*SearchUuidRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Account_ServiceDesc is the grpc.ServiceDesc for Account service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -170,6 +202,10 @@ var Account_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateAvatar",
 			Handler:    _Account_UpdateAvatar_Handler,
+		},
+		{
+			MethodName: "SearchUuid",
+			Handler:    _Account_SearchUuid_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
