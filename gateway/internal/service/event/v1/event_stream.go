@@ -483,7 +483,7 @@ func (s *EventStreamService) EventStream(conn pb.EventStream_EventStreamServer) 
 						continue
 					}
 
-					r, err := s.eu.ListFriendRequest(ctx, uid)
+					r, err := s.eu.ListFriendRequest(ctx, uid, req.GetListFriendRequestRequest().GetStartEventId(), req.GetListFriendRequestRequest().GetCount())
 					if err != nil {
 						s.log.Error(err)
 						err = conn.Send(&pb.EventStreamResponse{

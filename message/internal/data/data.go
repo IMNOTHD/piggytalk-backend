@@ -266,7 +266,8 @@ func NewData(conf *conf.Data, logger log.Logger) (*Data, func(), error) {
 		}
 	}
 	return &Data{
-		Db: db,
+		Db:  db,
+		Rdb: rdb,
 		Rmq: &RabbitMQ{
 			Conn:    conn,
 			Channel: channel,

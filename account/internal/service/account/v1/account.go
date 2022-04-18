@@ -63,6 +63,7 @@ func (s *AccountService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.L
 		Phone:    p,
 		Avatar:   a.Avatar,
 		Nickname: a.Nickname,
+		Uuid:     t.UserUUID.String(),
 	}, nil
 }
 func (s *AccountService) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterReply, error) {
@@ -78,7 +79,7 @@ func (s *AccountService) Register(ctx context.Context, req *pb.RegisterRequest) 
 		return nil, err
 	}
 
-	return &pb.RegisterReply{Token: t.Token}, nil
+	return &pb.RegisterReply{Token: t.Token, Uuid: t.UserUUID.String()}, nil
 }
 
 func (s *AccountService) CheckLoginStat(ctx context.Context, req *pb.CheckLoginStatRequest) (*pb.CheckLoginStatResponse, error) {

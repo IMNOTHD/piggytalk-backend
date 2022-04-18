@@ -21,6 +21,7 @@ type AccountRepo interface {
 }
 
 type Token string
+type Uuid string
 
 type Account struct {
 	Username string
@@ -29,6 +30,7 @@ type Account struct {
 	Email    string
 	Phone    string
 	Avatar   string
+	Uuid     string
 }
 
 type AccountUsecase struct {
@@ -114,30 +116,31 @@ func (au *AccountUsecase) Login(ctx context.Context, a *Account) (*Account, Toke
 		Email:    ar.Email,
 		Phone:    ar.Phone,
 		Avatar:   ar.GetAvatar(),
+		Uuid:     ar.GetUuid(),
 	}, Token(ar.GetToken()), nil
 }
 
-func (au *AccountUsecase) Register(ctx context.Context, a *Account) (Token, error) {
+func (au *AccountUsecase) Register(ctx context.Context, a *Account) (Token, Uuid, error) {
 	if r := regexp.MustCompile(_usernameExp); a.Username == "" || !r.Match([]byte(a.Username)) {
-		return "", errors.New(400, "BAD_REQUEST", "用户名格式错误")
+		return "", "", errors.New(400, "BAD_REQUEST", "用户名格式错误")
 	}
 	if a.Password == "" {
-		return "", errors.New(400, "BAD_REQUEST", "密码格式错误")
+		return "", "", errors.New(400, "BAD_REQUEST", "密码格式错误")
 	}
 	if r := regexp.MustCompile(_emailExp); a.Email != "" && !r.Match([]byte(a.Email)) {
-		return "", errors.New(400, "BAD_REQUEST", "邮箱格式错误")
+		return "", "", errors.New(400, "BAD_REQUEST", "邮箱格式错误")
 	}
 	if r := regexp.MustCompile(_phoneExp); a.Phone != "" && !r.Match([]byte(a.Phone)) {
-		return "", errors.New(400, "BAD_REQUEST", "手机格式错误")
+		return "", "", errors.New(400, "BAD_REQUEST", "手机格式错误")
 	}
 	if len(a.Nickname) <= 0 || len(a.Nickname) > 32 {
-		return "", errors.New(400, "BAD_REQUEST", "昵称过长")
+		return "", "", errors.New(400, "BAD_REQUEST", "昵称过长")
 	}
 
 	conn, err := kit.ServiceConn(kit.AccountEndpoint)
 	if err != nil {
 		au.log.Error(err)
-		return "", err
+		return "", "", err
 	}
 	c := v1.NewAccountClient(conn)
 
@@ -151,8 +154,8 @@ func (au *AccountUsecase) Register(ctx context.Context, a *Account) (Token, erro
 	})
 	if err != nil {
 		au.log.Error(err)
-		return "", err
+		return "", "", err
 	}
 
-	return Token(ar.GetToken()), nil
+	return Token(ar.GetToken()), Uuid(ar.Uuid), nil
 }

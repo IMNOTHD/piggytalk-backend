@@ -59,6 +59,7 @@ message LoginReply {
   string phone = 4;
   string avatar = 5;
   string nickname = 6;
+  string uuid = 7;
 }
 
 message RegisterRequest {
@@ -74,6 +75,7 @@ message RegisterRequest {
 
 message RegisterReply {
   string token = 1;
+  string uuid = 2;
 }
 
 message UpdateAvatarRequest {

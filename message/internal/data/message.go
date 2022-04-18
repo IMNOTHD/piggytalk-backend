@@ -179,10 +179,11 @@ func (r *messageRepo) AckFriendRequest(ctx context.Context, body []byte) error {
 }
 
 func (r *messageRepo) ListFriendRequest(ctx context.Context, uuid string, startId int64, count int64) ([]*v1.FriendAddMessage, error) {
-	if count <= 0 {
-		count = math.MaxInt64
+	if startId <= 0 {
+		startId = math.MaxInt64
 	}
 
+	// todo 为什么出去的eventid丢了俩位
 	var fm []*FriendAddMessage
 	ru := r.data.Db.
 		Raw("select `event_id`, `user_a`, `user_b`, `type`, `ack`, `event_uuid` from `friend_add_messages` where `event_id` < ? and (`user_a` = ? or `user_b` = ?) order by `event_id` desc limit ?",
@@ -192,6 +193,7 @@ func (r *messageRepo) ListFriendRequest(ctx context.Context, uuid string, startI
 		return nil, ru.Error
 	}
 
+	//fmt.Println(fm, startId, count, uuid)
 	var k []*v1.FriendAddMessage
 	for _, message := range fm {
 		k = append(k, &v1.FriendAddMessage{
@@ -409,6 +411,7 @@ func (r *messageRepo) selectUuidFromSession(ctx context.Context, uid string) (st
 	buffer.WriteString("piggytalk:gateway:sessionId2uid:")
 	buffer.WriteString(uid)
 
+	//fmt.Println(buffer.String())
 	x, err := r.data.Rdb.Get(ctx, buffer.String()).Result()
 	if err == redis.Nil {
 		r.log.Infof("uid %s not online", uid)

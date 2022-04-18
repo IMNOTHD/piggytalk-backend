@@ -56,6 +56,7 @@ func (s *AccountService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.L
 		Phone:    a.Phone,
 		Avatar:   a.Avatar,
 		Nickname: a.Nickname,
+		Uuid:     a.Uuid,
 	}, nil
 }
 func (s *AccountService) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterReply, error) {
@@ -65,7 +66,7 @@ func (s *AccountService) Register(ctx context.Context, req *pb.RegisterRequest) 
 		return nil, errorCheck(err)
 	}
 
-	t, err := s.au.Register(ctx, &v1.Account{
+	t, u, err := s.au.Register(ctx, &v1.Account{
 		Username: req.GetUsername(),
 		Password: req.GetPassword(),
 		Nickname: req.GetNickname(),
@@ -82,7 +83,7 @@ func (s *AccountService) Register(ctx context.Context, req *pb.RegisterRequest) 
 		tr.ReplyHeader().Set("Set-Cookie", fmt.Sprintf("csrf_token=%s; Path=/; Expires=%s; HttpOnly", string(t), time.Now().AddDate(1, 0, 0).Format(http.TimeFormat)))
 	}
 
-	return &pb.RegisterReply{Token: string(t)}, nil
+	return &pb.RegisterReply{Token: string(t), Uuid: string(u)}, nil
 }
 
 func (s *AccountService) UpdateAvatar(ctx context.Context, req *pb.UpdateAvatarRequest) (*pb.UpdateAvatarReply, error) {

@@ -54,7 +54,7 @@ func (uc *EventUsecase) AckFriendMessage(ctx context.Context, uid string, eventI
 	return uc.repo.AckFriendMessage(ctx, uid, eventId)
 }
 
-func (uc *EventUsecase) ListFriendRequest(ctx context.Context, uid string) ([]*pb.ListFriendRequestResponse_AddFriendMessage, error) {
+func (uc *EventUsecase) ListFriendRequest(ctx context.Context, uid string, startEventId, count int64) ([]*pb.ListFriendRequestResponse_AddFriendMessage, error) {
 	conn, err := kit.ServiceConn(kit.MessageEndpoint)
 	if err != nil {
 		uc.log.Error(err)
@@ -62,7 +62,11 @@ func (uc *EventUsecase) ListFriendRequest(ctx context.Context, uid string) ([]*p
 	}
 
 	x := mV1.NewMessageClient(conn)
-	r, err := x.ListFriendRequest(ctx, &mV1.ListFriendRequestRequest{Uuid: uid})
+	r, err := x.ListFriendRequest(ctx, &mV1.ListFriendRequestRequest{
+		Uuid:         uid,
+		StartEventId: startEventId,
+		Count:        count,
+	})
 	if err != nil {
 		uc.log.Error(err)
 		return nil, err
