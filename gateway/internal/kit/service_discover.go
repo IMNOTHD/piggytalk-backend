@@ -2,7 +2,6 @@ package kit
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	consul "github.com/go-kratos/consul/registry"
@@ -12,6 +11,7 @@ import (
 )
 
 var ConsulClient *api.Client
+var dis *consul.Registry
 
 const (
 	SnowflakeEndpoint = "discovery:///piggytalk-backend-snowflake"
@@ -28,6 +28,7 @@ func init() {
 		panic(err)
 	}
 	ConsulClient = c
+	dis = consul.New(ConsulClient)
 }
 
 // ServiceDiscover 服务发现，获取指定id的服务
@@ -37,21 +38,18 @@ func ServiceDiscover(serviceID string) (*api.AgentService, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(service.Address)
-	fmt.Println(service.Port)
+	dis = consul.New(ConsulClient)
+	//fmt.Println(service.Address)
+	//fmt.Println(service.Port)
 
 	return service, nil
 }
 
 func ServiceConn(endpoint string) (*grpc.ClientConn, error) {
-	dis := consul.New(ConsulClient)
-
 	return kGrpc.DialInsecure(context.Background(), kGrpc.WithEndpoint(endpoint), kGrpc.WithDiscovery(dis))
 }
 
 // ServiceConnWithTimeout 提供timeout选项, 给慢服务使用
 func ServiceConnWithTimeout(endpoint string, timeout time.Duration) (*grpc.ClientConn, error) {
-	dis := consul.New(ConsulClient)
-
 	return kGrpc.DialInsecure(context.Background(), kGrpc.WithEndpoint(endpoint), kGrpc.WithDiscovery(dis), kGrpc.WithTimeout(timeout))
 }

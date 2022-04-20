@@ -62,10 +62,11 @@ func (r *friendRelationRepo) CreateFriend(ctx context.Context, a uuid.UUID, b uu
 		jump = false
 	}
 
+	var ff FriendRelation
 	result = r.data.Db.Where(&FriendRelation{
 		UserA: b,
 		UserB: a,
-	}).Find(&f)
+	}).Find(&ff)
 	if result.Error != nil && !errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		r.log.Error(result.Error)
 		return result.Error
