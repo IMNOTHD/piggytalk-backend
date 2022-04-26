@@ -61,8 +61,8 @@ type SingleMessage struct {
 	SenderUuid uuid.UUID `gorm:"not null;index:idx_sender"`
 	// 表示在与谁聊天
 	Talk        uuid.UUID `gorm:"not null;index:idx_talk"`
-	Message     string
-	MessageUuid uuid.UUID
+	Message     []byte
+	MessageUuid uuid.UUID `gorm:"not null;index:idx_message_uuid"`
 	AlreadyRead bool
 	CreatedAt   time.Time
 }

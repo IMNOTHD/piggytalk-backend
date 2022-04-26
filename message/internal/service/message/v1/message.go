@@ -57,3 +57,24 @@ func (s *MessageService) ListFriendRequest(ctx context.Context, req *pb.ListFrie
 
 	return &pb.ListFriendRequestReply{AddFriendMessage: r}, nil
 }
+
+func (s *MessageService) ListUnAckSingleMessage(ctx context.Context, req *pb.ListUnAckSingleMessageRequest) (*pb.ListUnAckSingleMessageResponse, error) {
+	r, err := s.eu.ListUnAckSingleMessage(ctx, req.GetUuid())
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.ListUnAckSingleMessageResponse{SingleMessage: r}, nil
+}
+
+func (s *MessageService) ListSingleMessage(ctx context.Context, req *pb.ListSingleMessageRequest) (*pb.ListSingleMessageResponse, error) {
+	r, err := s.eu.ListSingleMessage(ctx, req.GetUuid(), req.GetFriendUuid(), req.GetStartId(), req.GetCount())
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.ListSingleMessageResponse{
+		MessageStruct: r,
+		Talk:          req.GetFriendUuid(),
+	}, nil
+}

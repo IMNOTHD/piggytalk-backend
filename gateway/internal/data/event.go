@@ -29,7 +29,9 @@ func NewEventRepo(data *Data, logger log.Logger) v1.EventRepo {
 }
 
 // message type
-const ()
+const (
+	_singleMessage = "SingleMessage"
+)
 
 // event type
 const (
@@ -99,6 +101,38 @@ func (r *eventRepo) RabbitMqLister(ctx context.Context) (func(), func()) {
 	}
 
 	return messageListener, eventListener
+}
+
+func (r *eventRepo) SendSingleMessage(ctx context.Context, messageChain []byte, senderUuid, messageUuid, receiverUuid string, messageId int64) error {
+	type s struct {
+		Sender, Talk, ReceiverUuid, MessageUuid string
+	}
+	cid := &s{
+		Sender:       senderUuid,
+		Talk:         receiverUuid,
+		ReceiverUuid: receiverUuid,
+		MessageUuid:  messageUuid,
+	}
+	x, err := json.Marshal(cid)
+	if err != nil {
+		r.log.Error(err)
+		return err
+	}
+
+	err = r.data.Rmq.Channel.Publish(
+		_messageTopicEx,
+		_messageMasterMQ,
+		false,
+		false,
+		amqp.Publishing{
+			ContentType:   "binary",
+			CorrelationId: string(x),
+			MessageId:     strconv.Itoa(int(messageId)),
+			Type:          _singleMessage,
+			Body:          messageChain,
+		},
+	)
+	return err
 }
 
 func (r *eventRepo) AckFriendMessage(ctx context.Context, uid string, eventId []int64) error {

@@ -10,6 +10,8 @@ service Message {
   rpc CreateMessage (CreateMessageRequest) returns (CreateMessageReply);
   rpc SelectFriendRequest (SelectFriendRequestRequest) returns (SelectFriendRequestReply);
   rpc ListFriendRequest (ListFriendRequestRequest) returns (ListFriendRequestReply);
+  rpc ListUnAckSingleMessage (ListUnAckSingleMessageRequest) returns (ListUnAckSingleMessageResponse);
+  rpc ListSingleMessage (ListSingleMessageRequest) returns (ListSingleMessageResponse);
 }
 
 message CreateMessageRequest {}
@@ -40,4 +42,54 @@ message ListFriendRequestReply {
     string type = 6;
   }
   repeated AddFriendMessage addFriendMessage = 1;
+}
+
+message ListSingleMessageRequest {
+  string uuid = 1;
+  string friendUuid = 2;
+  int64 count = 3;
+  int64 startId = 4;
+}
+
+message ListSingleMessageResponse {
+  message MessageStruct {
+    message SingleMessage {
+      repeated CommonMessage message = 1;
+    }
+    SingleMessage singleMessage = 1;
+    int64 messageId = 2;
+    string messageUuid = 3;
+    string senderUuid = 4;
+  }
+  repeated MessageStruct messageStruct = 1;
+  string talk = 2;
+}
+
+message ListUnAckSingleMessageRequest {
+  string uuid = 1;
+}
+
+message ListUnAckSingleMessageResponse {
+  message UnackSingleMessage {
+    string friendUuid = 1;
+    int64 unAck = 2;
+  }
+  repeated UnackSingleMessage singleMessage = 1;
+}
+
+message CommonMessage {
+  message Plain {
+    string text = 1;
+  }
+  message Image {
+    string url = 1;
+  }
+  message Emoji {
+    string name = 1;
+  }
+  oneof detail {
+    Plain plain = 1;
+    Image image = 2;
+    Emoji emoji = 3;
+  }
 }

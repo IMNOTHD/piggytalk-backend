@@ -84,8 +84,8 @@ type SingleMessage struct {
 	SenderUuid uuid.UUID `gorm:"not null;index:idx_sender"`
 	// 表示在与谁聊天
 	Talk        uuid.UUID `gorm:"not null;index:idx_talk"`
-	Message     string
-	MessageUuid uuid.UUID `gorm:"index:idx_message_uuid"`
+	Message     []byte
+	MessageUuid uuid.UUID `gorm:"not null;index:idx_message_uuid"`
 	AlreadyRead bool
 	CreatedAt   time.Time
 }
@@ -111,10 +111,10 @@ func (r *messageRepo) RabbitMqLister(ctx context.Context) (func(), func()) {
 		}
 
 		for m := range msg {
-			r.log.Infof("type: %s\nbody: %s", m.Type, m.Body)
+			r.log.Infof("type: %s\nbody: %s", m.Type, m.Body, m.CorrelationId, m.MessageId)
 			switch m.Type {
 			case _singleTalk:
-				err := r.SingleMessage(ctx, m.Body, m.MessageId)
+				err := r.SingleMessage(ctx, m.Body, m.MessageId, m.CorrelationId)
 				if err != nil {
 					r.log.Error(err)
 				}
@@ -155,6 +155,63 @@ func (r *messageRepo) RabbitMqLister(ctx context.Context) (func(), func()) {
 	}
 
 	return messageListener, eventListener
+}
+
+func (r *messageRepo) ListUnAckSingleMessage(ctx context.Context, uid string) ([]*v1.UnAckMessage, error) {
+	type count struct {
+		talk uuid.UUID
+		cnt  int64
+	}
+	table := "single_message_" + uid
+
+	var cnt []count
+	//todo 这条sql有巨大的性能问题, 待修
+	ru := r.data.Db.Raw("select distinct t1.talk, ifnull(t2.c, 0) as count from ? as t1"+
+		"left join"+
+		"(select `talk`, count(`message_id`) as c from ? where already_read=false group by `talk`) as t2"+
+		"on t1.talk = t2.talk", table, table).Scan(&cnt)
+	if ru.Error != nil && !errors.Is(ru.Error, gorm.ErrRecordNotFound) {
+		r.log.Error(ru.Error)
+		return nil, ru.Error
+	}
+
+	var k []*v1.UnAckMessage
+	for _, c := range cnt {
+		k = append(k, &v1.UnAckMessage{
+			UnAck:      c.cnt,
+			FriendUuid: c.talk.String(),
+		})
+	}
+
+	return k, nil
+}
+
+func (r *messageRepo) ListSingleMessage(ctx context.Context, uid string, friendUuid string, startId int64, count int64) ([]*v1.SingleMessage, error) {
+	if startId <= 0 {
+		startId = math.MaxInt64
+	}
+
+	var sm []*SingleMessage
+	ru := r.data.Db.
+		Raw("select `message_id`, `message_uuid`, `talk`, `sender_uuid`, `message` from ? where `message_id` < ? and `talk` = ? order by `message_id` desc limit ?", uid, startId, friendUuid, count).
+		Scan(&sm)
+	if ru.Error != nil && !errors.Is(ru.Error, gorm.ErrRecordNotFound) {
+		r.log.Error(ru.Error)
+		return nil, ru.Error
+	}
+
+	var k []*v1.SingleMessage
+	for _, message := range sm {
+		k = append(k, &v1.SingleMessage{
+			MessageId:   message.MessageId,
+			MessageUuid: message.MessageUuid.String(),
+			SenderUuid:  message.SenderUuid.String(),
+			Talk:        message.Talk.String(),
+			Message:     message.Message,
+		})
+	}
+
+	return k, nil
 }
 
 func (r *messageRepo) AckFriendRequest(ctx context.Context, body []byte) error {
@@ -209,15 +266,14 @@ func (r *messageRepo) ListFriendRequest(ctx context.Context, uuid string, startI
 	return k, nil
 }
 
-func (r *messageRepo) SingleMessage(ctx context.Context, body []byte, mid string) error {
+func (r *messageRepo) SingleMessage(ctx context.Context, body []byte, mid string, infoJson string) error {
 	type b struct {
 		Talk        string
 		SenderUuid  string
-		Message     string
 		MessageUuid string
 	}
 	var x b
-	err := json.Unmarshal(body, &x)
+	err := json.Unmarshal([]byte(infoJson), &x)
 	if err != nil {
 		r.log.Error(err)
 		return err
@@ -240,7 +296,7 @@ func (r *messageRepo) SingleMessage(ctx context.Context, body []byte, mid string
 			MessageId:   m,
 			SenderUuid:  uuid.MustParse(x.SenderUuid),
 			Talk:        uuid.MustParse(x.Talk),
-			Message:     x.Message,
+			Message:     body,
 			MessageUuid: uuid.MustParse(x.MessageUuid),
 			AlreadyRead: true,
 		})
@@ -260,7 +316,7 @@ func (r *messageRepo) SingleMessage(ctx context.Context, body []byte, mid string
 			MessageId:   m,
 			SenderUuid:  uuid.MustParse(x.SenderUuid),
 			Talk:        uuid.MustParse(x.SenderUuid),
-			Message:     x.Message,
+			Message:     body,
 			MessageUuid: uuid.MustParse(x.MessageUuid),
 			AlreadyRead: false,
 		})

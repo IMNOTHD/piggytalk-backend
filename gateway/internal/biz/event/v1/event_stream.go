@@ -15,6 +15,7 @@ import (
 
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/golang/protobuf/proto"
 	"github.com/google/uuid"
 )
 
@@ -30,6 +31,7 @@ type EventRepo interface {
 	UpdateBeatHeart(ctx context.Context, sessionId string, expiration time.Duration) error
 	SelectBeatHeart(ctx context.Context, sessionId string) (string, error)
 	AckFriendMessage(ctx context.Context, uid string, eventId []int64) error
+	SendSingleMessage(ctx context.Context, messageChain []byte, senderUuid, messageUuid, receiverUuid string, messageId int64) error
 }
 
 type SessionId string
@@ -48,6 +50,54 @@ func NewEventUsecase(repo EventRepo, logger log.Logger) *EventUsecase {
 
 func (uc *EventUsecase) RabbitMqListener(ctx context.Context) (func(), func()) {
 	return uc.repo.RabbitMqLister(ctx)
+}
+
+func (uc *EventUsecase) ListUnAckSingleMessage(ctx context.Context, uid string) ([]*pb.ListUnAckSingleMessageResponse_UnackSingleMessage, error) {
+	conn, err := kit.ServiceConn(kit.MessageEndpoint)
+	if err != nil {
+		uc.log.Error(err)
+		return nil, err
+	}
+
+	x := mV1.NewMessageClient(conn)
+	r, err := x.ListUnAckSingleMessage(ctx, &mV1.ListUnAckSingleMessageRequest{Uuid: uid})
+	if err != nil {
+		uc.log.Error(err)
+		return nil, err
+	}
+
+	var k []*pb.ListUnAckSingleMessageResponse_UnackSingleMessage
+	for _, i := range r.GetSingleMessage() {
+		k = append(k, &pb.ListUnAckSingleMessageResponse_UnackSingleMessage{
+			FriendUuid: i.GetFriendUuid(),
+			UnAck:      i.GetUnAck(),
+		})
+	}
+
+	return k, nil
+}
+
+func (uc *EventUsecase) SendSingleMessage(ctx context.Context, messageChain *pb.SingleMessageRequest_SingleMessage, senderUuid, messageUuid, receiverUuid string) error {
+	mb, err := proto.Marshal(messageChain)
+	if err != nil {
+		uc.log.Error(err)
+		return err
+	}
+
+	conn, err := kit.ServiceConn(kit.SnowflakeEndpoint)
+	if err != nil {
+		uc.log.Error(err)
+		return err
+	}
+
+	c := snV1.NewSnowflakeClient(conn)
+	sr, err := c.CreateSnowflake(ctx, &snV1.CreateSnowflakeRequest{
+		DataCenterId: 0,
+		WorkerId:     int64(conf.WorkerId),
+	})
+	mid := sr.GetSnowFlakeId()
+
+	return uc.repo.SendSingleMessage(ctx, mb, senderUuid, messageUuid, receiverUuid, mid)
 }
 
 func (uc *EventUsecase) AckFriendMessage(ctx context.Context, uid string, eventId []int64) error {

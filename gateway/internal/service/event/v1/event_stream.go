@@ -515,6 +515,7 @@ func (s *EventStreamService) EventStream(conn pb.EventStream_EventStreamServer) 
 					}
 
 					_ = s.eu.AckFriendMessage(ctx, uid, req.GetAckFriendMessageRequest().GetEventId())
+				case *pb.EventStreamRequest_ListUnAckSingleMessageRequest:
 				}
 			}
 

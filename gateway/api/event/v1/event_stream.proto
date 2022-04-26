@@ -27,6 +27,8 @@ message EventStreamRequest {
     ListUserInfoRequest listUserInfoRequest = 11;
     ListFriendRequestRequest listFriendRequestRequest = 12;
     AckFriendMessageRequest ackFriendMessageRequest = 13;
+    ListUnAckSingleMessageRequest listUnAckSingleMessageRequest = 14;
+    ListSingleMessageRequest listSingleMessageRequest = 15;
   }
 }
 
@@ -47,11 +49,26 @@ message EventStreamResponse {
     ListUserInfoResponse listUserInfoResponse = 13;
     ListFriendRequestResponse listFriendRequestResponse = 14;
     AckFriendMessageResponse ackFriendMessageResponse = 15;
+    ListUnAckSingleMessageResponse listUnAckSingleMessageResponse = 16;
+    ListSingleMessageResponse listSingleMessageResponse = 17;
   }
 }
 
 // ------------------------------
 // 以下为客户端发起的request event
+
+// 查询有多少未接受的single消息
+message ListUnAckSingleMessageRequest {
+  string token = 1;
+}
+
+// 查询single消息
+message ListSingleMessageRequest {
+  string token = 1;
+  string friendUuid = 2;
+  int64 count = 3;
+  int64 startId = 4;
+}
 
 // 登录后上线request
 message OnlineRequest {
@@ -109,7 +126,10 @@ message DeleteFriendRequest {
 
 // 单聊
 message SingleMessageRequest {
-  repeated Message messageChain = 1;
+  message SingleMessage {
+    repeated CommonMessage messageChain = 1;
+  }
+  SingleMessage singleMessage = 1;
   string messageUuid = 2;
   // 接收者uuid
   string receiverUuid = 3;
@@ -137,6 +157,26 @@ message AckFriendMessageRequest {
 
 // ------------------------------
 // 以下为服务端发起的response event
+
+// 查询有多少未接受的single消息
+message ListUnAckSingleMessageResponse {
+  message UnackSingleMessage {
+    string friendUuid = 1;
+    int64 unAck = 2;
+  }
+  repeated UnackSingleMessage singleMessage = 1;
+}
+
+message ListSingleMessageResponse {
+  message MessageStruct {
+    CommonMessage message = 1;
+    int64 messageId = 2;
+    string messageUuid = 3;
+  }
+  repeated MessageStruct messageStruct = 1;
+  string friendUuid = 2;
+  string talk = 3;
+}
 
 // 登录后上线response
 message OnlineResponse {
@@ -223,7 +263,7 @@ message AckFriendMessageResponse {
 // ------------------------------
 // 通用类型
 
-message Message {
+message CommonMessage {
   message Plain {
     string text = 1;
   }

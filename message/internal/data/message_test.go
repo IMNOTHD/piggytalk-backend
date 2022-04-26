@@ -14,38 +14,30 @@ func TestMessage(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	db.Migrator().CreateTable(&FriendAddMessage{})
+	u := uuid.MustParse("8f52b66f-f1fd-4f05-ba0a-7488ebdb8b21")
+	table := "single_message_" + u.String()
+
 	ua := uuid.MustParse("38ec8e53-7c68-4410-b81e-04c2b5eb4f0c")
 	ub := uuid.MustParse("c0cfb721-5bd0-4e5e-951f-089149fa5d9d")
-	for i := 0; i < 500; i++ {
-		k := make([]*FriendAddMessage, 0)
-		for j := 0; j < 3000; j++ {
-			if j%1000 == 0 {
-				k = append(k, &FriendAddMessage{
-					EventId:   int64(i*3000+j)*1000 + rand.Int63n(1000),
-					UserA:     ua,
-					UserB:     ub,
-					Type:      "WAITING",
-					EventUuid: uuid.New(),
-				})
-			} else if j%1000 == 1 {
-				k = append(k, &FriendAddMessage{
-					EventId:   int64(i*3000+j)*1000 + rand.Int63n(1000),
-					UserA:     ub,
-					UserB:     ua,
-					Type:      "WAITING",
-					EventUuid: uuid.New(),
-				})
-			} else {
-				k = append(k, &FriendAddMessage{
-					EventId:   int64(i*3000+j)*1000 + rand.Int63n(1000),
-					UserA:     uuid.New(),
-					UserB:     uuid.New(),
-					Type:      "WAITING",
-					EventUuid: uuid.New(),
-				})
-			}
+	uc := uuid.MustParse("7e8b7435-6522-a557-1fa8-9c5b23d86ff8")
+	ud := uuid.MustParse("bae23b0b-5a9a-a5a9-57c7-57e0d6a7e47a")
+	ue := uuid.MustParse("1a9a82a3-8c38-8279-d509-2de536c1b996")
+
+	var us []uuid.UUID = []uuid.UUID{ua, ub, uc, ud, ue}
+	for i := 0; i < 50; i++ {
+		k := make([]*SingleMessage, 0)
+
+		for j := 0; j < 1000; j++ {
+			uid := us[rand.Intn(5)]
+			k = append(k, &SingleMessage{
+				MessageId:   int64(i*1000 + j),
+				SenderUuid:  uid,
+				Talk:        uid,
+				Message:     "",
+				MessageUuid: uuid.New(),
+				AlreadyRead: rand.Intn(2) != 0,
+			})
 		}
-		db.Create(k)
+		db.Table(table).Create(k)
 	}
 }

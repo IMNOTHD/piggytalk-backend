@@ -309,6 +309,320 @@ func (x *ListFriendRequestReply) GetAddFriendMessage() []*ListFriendRequestReply
 	return nil
 }
 
+type ListSingleMessageRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Uuid       string `protobuf:"bytes,1,opt,name=uuid,proto3" json:"uuid,omitempty"`
+	FriendUuid string `protobuf:"bytes,2,opt,name=friendUuid,proto3" json:"friendUuid,omitempty"`
+	Count      int64  `protobuf:"varint,3,opt,name=count,proto3" json:"count,omitempty"`
+	StartId    int64  `protobuf:"varint,4,opt,name=startId,proto3" json:"startId,omitempty"`
+}
+
+func (x *ListSingleMessageRequest) Reset() {
+	*x = ListSingleMessageRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_internal_api_message_message_v1_message_proto_msgTypes[6]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ListSingleMessageRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListSingleMessageRequest) ProtoMessage() {}
+
+func (x *ListSingleMessageRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_api_message_message_v1_message_proto_msgTypes[6]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListSingleMessageRequest.ProtoReflect.Descriptor instead.
+func (*ListSingleMessageRequest) Descriptor() ([]byte, []int) {
+	return file_internal_api_message_message_v1_message_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *ListSingleMessageRequest) GetUuid() string {
+	if x != nil {
+		return x.Uuid
+	}
+	return ""
+}
+
+func (x *ListSingleMessageRequest) GetFriendUuid() string {
+	if x != nil {
+		return x.FriendUuid
+	}
+	return ""
+}
+
+func (x *ListSingleMessageRequest) GetCount() int64 {
+	if x != nil {
+		return x.Count
+	}
+	return 0
+}
+
+func (x *ListSingleMessageRequest) GetStartId() int64 {
+	if x != nil {
+		return x.StartId
+	}
+	return 0
+}
+
+type ListSingleMessageResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	MessageStruct []*ListSingleMessageResponse_MessageStruct `protobuf:"bytes,1,rep,name=messageStruct,proto3" json:"messageStruct,omitempty"`
+	Talk          string                                     `protobuf:"bytes,2,opt,name=talk,proto3" json:"talk,omitempty"`
+}
+
+func (x *ListSingleMessageResponse) Reset() {
+	*x = ListSingleMessageResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_internal_api_message_message_v1_message_proto_msgTypes[7]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ListSingleMessageResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListSingleMessageResponse) ProtoMessage() {}
+
+func (x *ListSingleMessageResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_api_message_message_v1_message_proto_msgTypes[7]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListSingleMessageResponse.ProtoReflect.Descriptor instead.
+func (*ListSingleMessageResponse) Descriptor() ([]byte, []int) {
+	return file_internal_api_message_message_v1_message_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *ListSingleMessageResponse) GetMessageStruct() []*ListSingleMessageResponse_MessageStruct {
+	if x != nil {
+		return x.MessageStruct
+	}
+	return nil
+}
+
+func (x *ListSingleMessageResponse) GetTalk() string {
+	if x != nil {
+		return x.Talk
+	}
+	return ""
+}
+
+type ListUnAckSingleMessageRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Uuid string `protobuf:"bytes,1,opt,name=uuid,proto3" json:"uuid,omitempty"`
+}
+
+func (x *ListUnAckSingleMessageRequest) Reset() {
+	*x = ListUnAckSingleMessageRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_internal_api_message_message_v1_message_proto_msgTypes[8]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ListUnAckSingleMessageRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListUnAckSingleMessageRequest) ProtoMessage() {}
+
+func (x *ListUnAckSingleMessageRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_api_message_message_v1_message_proto_msgTypes[8]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListUnAckSingleMessageRequest.ProtoReflect.Descriptor instead.
+func (*ListUnAckSingleMessageRequest) Descriptor() ([]byte, []int) {
+	return file_internal_api_message_message_v1_message_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *ListUnAckSingleMessageRequest) GetUuid() string {
+	if x != nil {
+		return x.Uuid
+	}
+	return ""
+}
+
+type ListUnAckSingleMessageResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	SingleMessage []*ListUnAckSingleMessageResponse_UnackSingleMessage `protobuf:"bytes,1,rep,name=singleMessage,proto3" json:"singleMessage,omitempty"`
+}
+
+func (x *ListUnAckSingleMessageResponse) Reset() {
+	*x = ListUnAckSingleMessageResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_internal_api_message_message_v1_message_proto_msgTypes[9]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ListUnAckSingleMessageResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListUnAckSingleMessageResponse) ProtoMessage() {}
+
+func (x *ListUnAckSingleMessageResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_api_message_message_v1_message_proto_msgTypes[9]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListUnAckSingleMessageResponse.ProtoReflect.Descriptor instead.
+func (*ListUnAckSingleMessageResponse) Descriptor() ([]byte, []int) {
+	return file_internal_api_message_message_v1_message_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *ListUnAckSingleMessageResponse) GetSingleMessage() []*ListUnAckSingleMessageResponse_UnackSingleMessage {
+	if x != nil {
+		return x.SingleMessage
+	}
+	return nil
+}
+
+type CommonMessage struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Types that are assignable to Detail:
+	//	*CommonMessage_Plain_
+	//	*CommonMessage_Image_
+	//	*CommonMessage_Emoji_
+	Detail isCommonMessage_Detail `protobuf_oneof:"detail"`
+}
+
+func (x *CommonMessage) Reset() {
+	*x = CommonMessage{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_internal_api_message_message_v1_message_proto_msgTypes[10]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *CommonMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CommonMessage) ProtoMessage() {}
+
+func (x *CommonMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_api_message_message_v1_message_proto_msgTypes[10]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CommonMessage.ProtoReflect.Descriptor instead.
+func (*CommonMessage) Descriptor() ([]byte, []int) {
+	return file_internal_api_message_message_v1_message_proto_rawDescGZIP(), []int{10}
+}
+
+func (m *CommonMessage) GetDetail() isCommonMessage_Detail {
+	if m != nil {
+		return m.Detail
+	}
+	return nil
+}
+
+func (x *CommonMessage) GetPlain() *CommonMessage_Plain {
+	if x, ok := x.GetDetail().(*CommonMessage_Plain_); ok {
+		return x.Plain
+	}
+	return nil
+}
+
+func (x *CommonMessage) GetImage() *CommonMessage_Image {
+	if x, ok := x.GetDetail().(*CommonMessage_Image_); ok {
+		return x.Image
+	}
+	return nil
+}
+
+func (x *CommonMessage) GetEmoji() *CommonMessage_Emoji {
+	if x, ok := x.GetDetail().(*CommonMessage_Emoji_); ok {
+		return x.Emoji
+	}
+	return nil
+}
+
+type isCommonMessage_Detail interface {
+	isCommonMessage_Detail()
+}
+
+type CommonMessage_Plain_ struct {
+	Plain *CommonMessage_Plain `protobuf:"bytes,1,opt,name=plain,proto3,oneof"`
+}
+
+type CommonMessage_Image_ struct {
+	Image *CommonMessage_Image `protobuf:"bytes,2,opt,name=image,proto3,oneof"`
+}
+
+type CommonMessage_Emoji_ struct {
+	Emoji *CommonMessage_Emoji `protobuf:"bytes,3,opt,name=emoji,proto3,oneof"`
+}
+
+func (*CommonMessage_Plain_) isCommonMessage_Detail() {}
+
+func (*CommonMessage_Image_) isCommonMessage_Detail() {}
+
+func (*CommonMessage_Emoji_) isCommonMessage_Detail() {}
+
 type ListFriendRequestReply_AddFriendMessage struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -325,7 +639,7 @@ type ListFriendRequestReply_AddFriendMessage struct {
 func (x *ListFriendRequestReply_AddFriendMessage) Reset() {
 	*x = ListFriendRequestReply_AddFriendMessage{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_internal_api_message_message_v1_message_proto_msgTypes[6]
+		mi := &file_internal_api_message_message_v1_message_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -338,7 +652,7 @@ func (x *ListFriendRequestReply_AddFriendMessage) String() string {
 func (*ListFriendRequestReply_AddFriendMessage) ProtoMessage() {}
 
 func (x *ListFriendRequestReply_AddFriendMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_internal_api_message_message_v1_message_proto_msgTypes[6]
+	mi := &file_internal_api_message_message_v1_message_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -396,6 +710,320 @@ func (x *ListFriendRequestReply_AddFriendMessage) GetType() string {
 	return ""
 }
 
+type ListSingleMessageResponse_MessageStruct struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	SingleMessage *ListSingleMessageResponse_MessageStruct_SingleMessage `protobuf:"bytes,1,opt,name=singleMessage,proto3" json:"singleMessage,omitempty"`
+	MessageId     int64                                                  `protobuf:"varint,2,opt,name=messageId,proto3" json:"messageId,omitempty"`
+	MessageUuid   string                                                 `protobuf:"bytes,3,opt,name=messageUuid,proto3" json:"messageUuid,omitempty"`
+	SenderUuid    string                                                 `protobuf:"bytes,4,opt,name=senderUuid,proto3" json:"senderUuid,omitempty"`
+}
+
+func (x *ListSingleMessageResponse_MessageStruct) Reset() {
+	*x = ListSingleMessageResponse_MessageStruct{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_internal_api_message_message_v1_message_proto_msgTypes[12]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ListSingleMessageResponse_MessageStruct) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListSingleMessageResponse_MessageStruct) ProtoMessage() {}
+
+func (x *ListSingleMessageResponse_MessageStruct) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_api_message_message_v1_message_proto_msgTypes[12]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListSingleMessageResponse_MessageStruct.ProtoReflect.Descriptor instead.
+func (*ListSingleMessageResponse_MessageStruct) Descriptor() ([]byte, []int) {
+	return file_internal_api_message_message_v1_message_proto_rawDescGZIP(), []int{7, 0}
+}
+
+func (x *ListSingleMessageResponse_MessageStruct) GetSingleMessage() *ListSingleMessageResponse_MessageStruct_SingleMessage {
+	if x != nil {
+		return x.SingleMessage
+	}
+	return nil
+}
+
+func (x *ListSingleMessageResponse_MessageStruct) GetMessageId() int64 {
+	if x != nil {
+		return x.MessageId
+	}
+	return 0
+}
+
+func (x *ListSingleMessageResponse_MessageStruct) GetMessageUuid() string {
+	if x != nil {
+		return x.MessageUuid
+	}
+	return ""
+}
+
+func (x *ListSingleMessageResponse_MessageStruct) GetSenderUuid() string {
+	if x != nil {
+		return x.SenderUuid
+	}
+	return ""
+}
+
+type ListSingleMessageResponse_MessageStruct_SingleMessage struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Message []*CommonMessage `protobuf:"bytes,1,rep,name=message,proto3" json:"message,omitempty"`
+}
+
+func (x *ListSingleMessageResponse_MessageStruct_SingleMessage) Reset() {
+	*x = ListSingleMessageResponse_MessageStruct_SingleMessage{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_internal_api_message_message_v1_message_proto_msgTypes[13]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ListSingleMessageResponse_MessageStruct_SingleMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListSingleMessageResponse_MessageStruct_SingleMessage) ProtoMessage() {}
+
+func (x *ListSingleMessageResponse_MessageStruct_SingleMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_api_message_message_v1_message_proto_msgTypes[13]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListSingleMessageResponse_MessageStruct_SingleMessage.ProtoReflect.Descriptor instead.
+func (*ListSingleMessageResponse_MessageStruct_SingleMessage) Descriptor() ([]byte, []int) {
+	return file_internal_api_message_message_v1_message_proto_rawDescGZIP(), []int{7, 0, 0}
+}
+
+func (x *ListSingleMessageResponse_MessageStruct_SingleMessage) GetMessage() []*CommonMessage {
+	if x != nil {
+		return x.Message
+	}
+	return nil
+}
+
+type ListUnAckSingleMessageResponse_UnackSingleMessage struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	FriendUuid string `protobuf:"bytes,1,opt,name=friendUuid,proto3" json:"friendUuid,omitempty"`
+	UnAck      int64  `protobuf:"varint,2,opt,name=unAck,proto3" json:"unAck,omitempty"`
+}
+
+func (x *ListUnAckSingleMessageResponse_UnackSingleMessage) Reset() {
+	*x = ListUnAckSingleMessageResponse_UnackSingleMessage{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_internal_api_message_message_v1_message_proto_msgTypes[14]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ListUnAckSingleMessageResponse_UnackSingleMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListUnAckSingleMessageResponse_UnackSingleMessage) ProtoMessage() {}
+
+func (x *ListUnAckSingleMessageResponse_UnackSingleMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_api_message_message_v1_message_proto_msgTypes[14]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListUnAckSingleMessageResponse_UnackSingleMessage.ProtoReflect.Descriptor instead.
+func (*ListUnAckSingleMessageResponse_UnackSingleMessage) Descriptor() ([]byte, []int) {
+	return file_internal_api_message_message_v1_message_proto_rawDescGZIP(), []int{9, 0}
+}
+
+func (x *ListUnAckSingleMessageResponse_UnackSingleMessage) GetFriendUuid() string {
+	if x != nil {
+		return x.FriendUuid
+	}
+	return ""
+}
+
+func (x *ListUnAckSingleMessageResponse_UnackSingleMessage) GetUnAck() int64 {
+	if x != nil {
+		return x.UnAck
+	}
+	return 0
+}
+
+type CommonMessage_Plain struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Text string `protobuf:"bytes,1,opt,name=text,proto3" json:"text,omitempty"`
+}
+
+func (x *CommonMessage_Plain) Reset() {
+	*x = CommonMessage_Plain{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_internal_api_message_message_v1_message_proto_msgTypes[15]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *CommonMessage_Plain) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CommonMessage_Plain) ProtoMessage() {}
+
+func (x *CommonMessage_Plain) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_api_message_message_v1_message_proto_msgTypes[15]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CommonMessage_Plain.ProtoReflect.Descriptor instead.
+func (*CommonMessage_Plain) Descriptor() ([]byte, []int) {
+	return file_internal_api_message_message_v1_message_proto_rawDescGZIP(), []int{10, 0}
+}
+
+func (x *CommonMessage_Plain) GetText() string {
+	if x != nil {
+		return x.Text
+	}
+	return ""
+}
+
+type CommonMessage_Image struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Url string `protobuf:"bytes,1,opt,name=url,proto3" json:"url,omitempty"`
+}
+
+func (x *CommonMessage_Image) Reset() {
+	*x = CommonMessage_Image{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_internal_api_message_message_v1_message_proto_msgTypes[16]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *CommonMessage_Image) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CommonMessage_Image) ProtoMessage() {}
+
+func (x *CommonMessage_Image) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_api_message_message_v1_message_proto_msgTypes[16]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CommonMessage_Image.ProtoReflect.Descriptor instead.
+func (*CommonMessage_Image) Descriptor() ([]byte, []int) {
+	return file_internal_api_message_message_v1_message_proto_rawDescGZIP(), []int{10, 1}
+}
+
+func (x *CommonMessage_Image) GetUrl() string {
+	if x != nil {
+		return x.Url
+	}
+	return ""
+}
+
+type CommonMessage_Emoji struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+}
+
+func (x *CommonMessage_Emoji) Reset() {
+	*x = CommonMessage_Emoji{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_internal_api_message_message_v1_message_proto_msgTypes[17]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *CommonMessage_Emoji) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CommonMessage_Emoji) ProtoMessage() {}
+
+func (x *CommonMessage_Emoji) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_api_message_message_v1_message_proto_msgTypes[17]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CommonMessage_Emoji.ProtoReflect.Descriptor instead.
+func (*CommonMessage_Emoji) Descriptor() ([]byte, []int) {
+	return file_internal_api_message_message_v1_message_proto_rawDescGZIP(), []int{10, 2}
+}
+
+func (x *CommonMessage_Emoji) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
 var File_internal_api_message_message_v1_message_proto protoreflect.FileDescriptor
 
 var file_internal_api_message_message_v1_message_proto_rawDesc = []byte{
@@ -442,33 +1070,124 @@ var file_internal_api_message_message_v1_message_proto_rawDesc = []byte{
 	0x0a, 0x0a, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x55, 0x75, 0x69, 0x64, 0x18, 0x05, 0x20, 0x01,
 	0x28, 0x09, 0x52, 0x0a, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x55, 0x75, 0x69, 0x64, 0x12, 0x12,
 	0x0a, 0x04, 0x74, 0x79, 0x70, 0x65, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x74, 0x79,
-	0x70, 0x65, 0x32, 0xe8, 0x02, 0x0a, 0x07, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x69,
-	0x0a, 0x0d, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12,
-	0x2c, 0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x6d, 0x65,
-	0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x4d,
-	0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x2a, 0x2e,
-	0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x6d, 0x65, 0x73, 0x73,
-	0x61, 0x67, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x4d, 0x65, 0x73,
-	0x73, 0x61, 0x67, 0x65, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x12, 0x7b, 0x0a, 0x13, 0x53, 0x65, 0x6c,
-	0x65, 0x63, 0x74, 0x46, 0x72, 0x69, 0x65, 0x6e, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
-	0x12, 0x32, 0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x6d,
-	0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x53, 0x65, 0x6c, 0x65, 0x63, 0x74,
-	0x46, 0x72, 0x69, 0x65, 0x6e, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x52, 0x65, 0x71,
-	0x75, 0x65, 0x73, 0x74, 0x1a, 0x30, 0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x61,
-	0x70, 0x69, 0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x53, 0x65,
-	0x6c, 0x65, 0x63, 0x74, 0x46, 0x72, 0x69, 0x65, 0x6e, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
-	0x74, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x12, 0x75, 0x0a, 0x11, 0x4c, 0x69, 0x73, 0x74, 0x46, 0x72,
-	0x69, 0x65, 0x6e, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x30, 0x2e, 0x6d, 0x65,
+	0x70, 0x65, 0x22, 0x7e, 0x0a, 0x18, 0x4c, 0x69, 0x73, 0x74, 0x53, 0x69, 0x6e, 0x67, 0x6c, 0x65,
+	0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x12,
+	0x0a, 0x04, 0x75, 0x75, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x75, 0x75,
+	0x69, 0x64, 0x12, 0x1e, 0x0a, 0x0a, 0x66, 0x72, 0x69, 0x65, 0x6e, 0x64, 0x55, 0x75, 0x69, 0x64,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x66, 0x72, 0x69, 0x65, 0x6e, 0x64, 0x55, 0x75,
+	0x69, 0x64, 0x12, 0x14, 0x0a, 0x05, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28,
+	0x03, 0x52, 0x05, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x18, 0x0a, 0x07, 0x73, 0x74, 0x61, 0x72,
+	0x74, 0x49, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x03, 0x52, 0x07, 0x73, 0x74, 0x61, 0x72, 0x74,
+	0x49, 0x64, 0x22, 0xcf, 0x03, 0x0a, 0x19, 0x4c, 0x69, 0x73, 0x74, 0x53, 0x69, 0x6e, 0x67, 0x6c,
+	0x65, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
+	0x12, 0x65, 0x0a, 0x0d, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x53, 0x74, 0x72, 0x75, 0x63,
+	0x74, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x3f, 0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67,
+	0x65, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x76, 0x31,
+	0x2e, 0x4c, 0x69, 0x73, 0x74, 0x53, 0x69, 0x6e, 0x67, 0x6c, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61,
+	0x67, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x2e, 0x4d, 0x65, 0x73, 0x73, 0x61,
+	0x67, 0x65, 0x53, 0x74, 0x72, 0x75, 0x63, 0x74, 0x52, 0x0d, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67,
+	0x65, 0x53, 0x74, 0x72, 0x75, 0x63, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x74, 0x61, 0x6c, 0x6b, 0x18,
+	0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x74, 0x61, 0x6c, 0x6b, 0x1a, 0xb6, 0x02, 0x0a, 0x0d,
+	0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x53, 0x74, 0x72, 0x75, 0x63, 0x74, 0x12, 0x73, 0x0a,
+	0x0d, 0x73, 0x69, 0x6e, 0x67, 0x6c, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x0b, 0x32, 0x4d, 0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x61,
+	0x70, 0x69, 0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4c, 0x69,
+	0x73, 0x74, 0x53, 0x69, 0x6e, 0x67, 0x6c, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52,
+	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x2e, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x53,
+	0x74, 0x72, 0x75, 0x63, 0x74, 0x2e, 0x53, 0x69, 0x6e, 0x67, 0x6c, 0x65, 0x4d, 0x65, 0x73, 0x73,
+	0x61, 0x67, 0x65, 0x52, 0x0d, 0x73, 0x69, 0x6e, 0x67, 0x6c, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61,
+	0x67, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x49, 0x64, 0x18,
+	0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x09, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x49, 0x64,
+	0x12, 0x20, 0x0a, 0x0b, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x55, 0x75, 0x69, 0x64, 0x18,
+	0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x55, 0x75,
+	0x69, 0x64, 0x12, 0x1e, 0x0a, 0x0a, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x55, 0x75, 0x69, 0x64,
+	0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x55, 0x75,
+	0x69, 0x64, 0x1a, 0x50, 0x0a, 0x0d, 0x53, 0x69, 0x6e, 0x67, 0x6c, 0x65, 0x4d, 0x65, 0x73, 0x73,
+	0x61, 0x67, 0x65, 0x12, 0x3f, 0x0a, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x18, 0x01,
+	0x20, 0x03, 0x28, 0x0b, 0x32, 0x25, 0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x61,
+	0x70, 0x69, 0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x6f,
+	0x6d, 0x6d, 0x6f, 0x6e, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x07, 0x6d, 0x65, 0x73,
+	0x73, 0x61, 0x67, 0x65, 0x22, 0x33, 0x0a, 0x1d, 0x4c, 0x69, 0x73, 0x74, 0x55, 0x6e, 0x41, 0x63,
+	0x6b, 0x53, 0x69, 0x6e, 0x67, 0x6c, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x65,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x75, 0x75, 0x69, 0x64, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x04, 0x75, 0x75, 0x69, 0x64, 0x22, 0xdd, 0x01, 0x0a, 0x1e, 0x4c, 0x69,
+	0x73, 0x74, 0x55, 0x6e, 0x41, 0x63, 0x6b, 0x53, 0x69, 0x6e, 0x67, 0x6c, 0x65, 0x4d, 0x65, 0x73,
+	0x73, 0x61, 0x67, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x6f, 0x0a, 0x0d,
+	0x73, 0x69, 0x6e, 0x67, 0x6c, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x18, 0x01, 0x20,
+	0x03, 0x28, 0x0b, 0x32, 0x49, 0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x61, 0x70,
+	0x69, 0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4c, 0x69, 0x73,
+	0x74, 0x55, 0x6e, 0x41, 0x63, 0x6b, 0x53, 0x69, 0x6e, 0x67, 0x6c, 0x65, 0x4d, 0x65, 0x73, 0x73,
+	0x61, 0x67, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x2e, 0x55, 0x6e, 0x61, 0x63,
+	0x6b, 0x53, 0x69, 0x6e, 0x67, 0x6c, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x0d,
+	0x73, 0x69, 0x6e, 0x67, 0x6c, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x1a, 0x4a, 0x0a,
+	0x12, 0x55, 0x6e, 0x61, 0x63, 0x6b, 0x53, 0x69, 0x6e, 0x67, 0x6c, 0x65, 0x4d, 0x65, 0x73, 0x73,
+	0x61, 0x67, 0x65, 0x12, 0x1e, 0x0a, 0x0a, 0x66, 0x72, 0x69, 0x65, 0x6e, 0x64, 0x55, 0x75, 0x69,
+	0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x66, 0x72, 0x69, 0x65, 0x6e, 0x64, 0x55,
+	0x75, 0x69, 0x64, 0x12, 0x14, 0x0a, 0x05, 0x75, 0x6e, 0x41, 0x63, 0x6b, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x03, 0x52, 0x05, 0x75, 0x6e, 0x41, 0x63, 0x6b, 0x22, 0xbd, 0x02, 0x0a, 0x0d, 0x43, 0x6f,
+	0x6d, 0x6d, 0x6f, 0x6e, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x43, 0x0a, 0x05, 0x70,
+	0x6c, 0x61, 0x69, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2b, 0x2e, 0x6d, 0x65, 0x73,
+	0x73, 0x61, 0x67, 0x65, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65,
+	0x2e, 0x76, 0x31, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67,
+	0x65, 0x2e, 0x50, 0x6c, 0x61, 0x69, 0x6e, 0x48, 0x00, 0x52, 0x05, 0x70, 0x6c, 0x61, 0x69, 0x6e,
+	0x12, 0x43, 0x0a, 0x05, 0x69, 0x6d, 0x61, 0x67, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x2b, 0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x6d, 0x65,
+	0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x4d,
+	0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x48, 0x00, 0x52, 0x05,
+	0x69, 0x6d, 0x61, 0x67, 0x65, 0x12, 0x43, 0x0a, 0x05, 0x65, 0x6d, 0x6f, 0x6a, 0x69, 0x18, 0x03,
+	0x20, 0x01, 0x28, 0x0b, 0x32, 0x2b, 0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x61,
+	0x70, 0x69, 0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x6f,
+	0x6d, 0x6d, 0x6f, 0x6e, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x45, 0x6d, 0x6f, 0x6a,
+	0x69, 0x48, 0x00, 0x52, 0x05, 0x65, 0x6d, 0x6f, 0x6a, 0x69, 0x1a, 0x1b, 0x0a, 0x05, 0x50, 0x6c,
+	0x61, 0x69, 0x6e, 0x12, 0x12, 0x0a, 0x04, 0x74, 0x65, 0x78, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x04, 0x74, 0x65, 0x78, 0x74, 0x1a, 0x19, 0x0a, 0x05, 0x49, 0x6d, 0x61, 0x67, 0x65,
+	0x12, 0x10, 0x0a, 0x03, 0x75, 0x72, 0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x75,
+	0x72, 0x6c, 0x1a, 0x1b, 0x0a, 0x05, 0x45, 0x6d, 0x6f, 0x6a, 0x69, 0x12, 0x12, 0x0a, 0x04, 0x6e,
+	0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x42,
+	0x08, 0x0a, 0x06, 0x64, 0x65, 0x74, 0x61, 0x69, 0x6c, 0x32, 0xec, 0x04, 0x0a, 0x07, 0x4d, 0x65,
+	0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x69, 0x0a, 0x0d, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x4d,
+	0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x2c, 0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65,
+	0x2e, 0x61, 0x70, 0x69, 0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x76, 0x31, 0x2e,
+	0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x1a, 0x2a, 0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x61,
+	0x70, 0x69, 0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x72,
+	0x65, 0x61, 0x74, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x65, 0x70, 0x6c, 0x79,
+	0x12, 0x7b, 0x0a, 0x13, 0x53, 0x65, 0x6c, 0x65, 0x63, 0x74, 0x46, 0x72, 0x69, 0x65, 0x6e, 0x64,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x32, 0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67,
+	0x65, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x76, 0x31,
+	0x2e, 0x53, 0x65, 0x6c, 0x65, 0x63, 0x74, 0x46, 0x72, 0x69, 0x65, 0x6e, 0x64, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x30, 0x2e, 0x6d, 0x65,
 	0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67,
-	0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x46, 0x72, 0x69, 0x65, 0x6e, 0x64, 0x52,
-	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x2e, 0x2e,
-	0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x6d, 0x65, 0x73, 0x73,
-	0x61, 0x67, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x46, 0x72, 0x69, 0x65, 0x6e,
-	0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x42, 0x2d, 0x0a,
-	0x0e, 0x61, 0x70, 0x69, 0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x76, 0x31, 0x50,
-	0x01, 0x5a, 0x19, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x6d,
-	0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2f, 0x76, 0x31, 0x3b, 0x76, 0x31, 0x62, 0x06, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x33,
+	0x65, 0x2e, 0x76, 0x31, 0x2e, 0x53, 0x65, 0x6c, 0x65, 0x63, 0x74, 0x46, 0x72, 0x69, 0x65, 0x6e,
+	0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x12, 0x75, 0x0a,
+	0x11, 0x4c, 0x69, 0x73, 0x74, 0x46, 0x72, 0x69, 0x65, 0x6e, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x12, 0x30, 0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x61, 0x70, 0x69,
+	0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4c, 0x69, 0x73, 0x74,
+	0x46, 0x72, 0x69, 0x65, 0x6e, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x1a, 0x2e, 0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x61,
+	0x70, 0x69, 0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4c, 0x69,
+	0x73, 0x74, 0x46, 0x72, 0x69, 0x65, 0x6e, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x52,
+	0x65, 0x70, 0x6c, 0x79, 0x12, 0x87, 0x01, 0x0a, 0x16, 0x4c, 0x69, 0x73, 0x74, 0x55, 0x6e, 0x41,
+	0x63, 0x6b, 0x53, 0x69, 0x6e, 0x67, 0x6c, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12,
+	0x35, 0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x6d, 0x65,
+	0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x55, 0x6e, 0x41,
+	0x63, 0x6b, 0x53, 0x69, 0x6e, 0x67, 0x6c, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52,
+	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x36, 0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65,
+	0x2e, 0x61, 0x70, 0x69, 0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x76, 0x31, 0x2e,
+	0x4c, 0x69, 0x73, 0x74, 0x55, 0x6e, 0x41, 0x63, 0x6b, 0x53, 0x69, 0x6e, 0x67, 0x6c, 0x65, 0x4d,
+	0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x78,
+	0x0a, 0x11, 0x4c, 0x69, 0x73, 0x74, 0x53, 0x69, 0x6e, 0x67, 0x6c, 0x65, 0x4d, 0x65, 0x73, 0x73,
+	0x61, 0x67, 0x65, 0x12, 0x30, 0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x61, 0x70,
+	0x69, 0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4c, 0x69, 0x73,
+	0x74, 0x53, 0x69, 0x6e, 0x67, 0x6c, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x65,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x31, 0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e,
+	0x61, 0x70, 0x69, 0x2e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4c,
+	0x69, 0x73, 0x74, 0x53, 0x69, 0x6e, 0x67, 0x6c, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65,
+	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x3e, 0x0a, 0x0e, 0x61, 0x70, 0x69, 0x2e,
+	0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x76, 0x31, 0x50, 0x01, 0x5a, 0x2a, 0x67, 0x61,
+	0x74, 0x65, 0x77, 0x61, 0x79, 0x2f, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x2f, 0x61,
+	0x70, 0x69, 0x2f, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2f, 0x6d, 0x65, 0x73, 0x73, 0x61,
+	0x67, 0x65, 0x2f, 0x76, 0x31, 0x3b, 0x76, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -483,29 +1202,51 @@ func file_internal_api_message_message_v1_message_proto_rawDescGZIP() []byte {
 	return file_internal_api_message_message_v1_message_proto_rawDescData
 }
 
-var file_internal_api_message_message_v1_message_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_internal_api_message_message_v1_message_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
 var file_internal_api_message_message_v1_message_proto_goTypes = []interface{}{
-	(*CreateMessageRequest)(nil),                    // 0: message.api.message.v1.CreateMessageRequest
-	(*CreateMessageReply)(nil),                      // 1: message.api.message.v1.CreateMessageReply
-	(*SelectFriendRequestRequest)(nil),              // 2: message.api.message.v1.SelectFriendRequestRequest
-	(*SelectFriendRequestReply)(nil),                // 3: message.api.message.v1.SelectFriendRequestReply
-	(*ListFriendRequestRequest)(nil),                // 4: message.api.message.v1.ListFriendRequestRequest
-	(*ListFriendRequestReply)(nil),                  // 5: message.api.message.v1.ListFriendRequestReply
-	(*ListFriendRequestReply_AddFriendMessage)(nil), // 6: message.api.message.v1.ListFriendRequestReply.AddFriendMessage
+	(*CreateMessageRequest)(nil),                                  // 0: message.api.message.v1.CreateMessageRequest
+	(*CreateMessageReply)(nil),                                    // 1: message.api.message.v1.CreateMessageReply
+	(*SelectFriendRequestRequest)(nil),                            // 2: message.api.message.v1.SelectFriendRequestRequest
+	(*SelectFriendRequestReply)(nil),                              // 3: message.api.message.v1.SelectFriendRequestReply
+	(*ListFriendRequestRequest)(nil),                              // 4: message.api.message.v1.ListFriendRequestRequest
+	(*ListFriendRequestReply)(nil),                                // 5: message.api.message.v1.ListFriendRequestReply
+	(*ListSingleMessageRequest)(nil),                              // 6: message.api.message.v1.ListSingleMessageRequest
+	(*ListSingleMessageResponse)(nil),                             // 7: message.api.message.v1.ListSingleMessageResponse
+	(*ListUnAckSingleMessageRequest)(nil),                         // 8: message.api.message.v1.ListUnAckSingleMessageRequest
+	(*ListUnAckSingleMessageResponse)(nil),                        // 9: message.api.message.v1.ListUnAckSingleMessageResponse
+	(*CommonMessage)(nil),                                         // 10: message.api.message.v1.CommonMessage
+	(*ListFriendRequestReply_AddFriendMessage)(nil),               // 11: message.api.message.v1.ListFriendRequestReply.AddFriendMessage
+	(*ListSingleMessageResponse_MessageStruct)(nil),               // 12: message.api.message.v1.ListSingleMessageResponse.MessageStruct
+	(*ListSingleMessageResponse_MessageStruct_SingleMessage)(nil), // 13: message.api.message.v1.ListSingleMessageResponse.MessageStruct.SingleMessage
+	(*ListUnAckSingleMessageResponse_UnackSingleMessage)(nil),     // 14: message.api.message.v1.ListUnAckSingleMessageResponse.UnackSingleMessage
+	(*CommonMessage_Plain)(nil),                                   // 15: message.api.message.v1.CommonMessage.Plain
+	(*CommonMessage_Image)(nil),                                   // 16: message.api.message.v1.CommonMessage.Image
+	(*CommonMessage_Emoji)(nil),                                   // 17: message.api.message.v1.CommonMessage.Emoji
 }
 var file_internal_api_message_message_v1_message_proto_depIdxs = []int32{
-	6, // 0: message.api.message.v1.ListFriendRequestReply.addFriendMessage:type_name -> message.api.message.v1.ListFriendRequestReply.AddFriendMessage
-	0, // 1: message.api.message.v1.Message.CreateMessage:input_type -> message.api.message.v1.CreateMessageRequest
-	2, // 2: message.api.message.v1.Message.SelectFriendRequest:input_type -> message.api.message.v1.SelectFriendRequestRequest
-	4, // 3: message.api.message.v1.Message.ListFriendRequest:input_type -> message.api.message.v1.ListFriendRequestRequest
-	1, // 4: message.api.message.v1.Message.CreateMessage:output_type -> message.api.message.v1.CreateMessageReply
-	3, // 5: message.api.message.v1.Message.SelectFriendRequest:output_type -> message.api.message.v1.SelectFriendRequestReply
-	5, // 6: message.api.message.v1.Message.ListFriendRequest:output_type -> message.api.message.v1.ListFriendRequestReply
-	4, // [4:7] is the sub-list for method output_type
-	1, // [1:4] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	11, // 0: message.api.message.v1.ListFriendRequestReply.addFriendMessage:type_name -> message.api.message.v1.ListFriendRequestReply.AddFriendMessage
+	12, // 1: message.api.message.v1.ListSingleMessageResponse.messageStruct:type_name -> message.api.message.v1.ListSingleMessageResponse.MessageStruct
+	14, // 2: message.api.message.v1.ListUnAckSingleMessageResponse.singleMessage:type_name -> message.api.message.v1.ListUnAckSingleMessageResponse.UnackSingleMessage
+	15, // 3: message.api.message.v1.CommonMessage.plain:type_name -> message.api.message.v1.CommonMessage.Plain
+	16, // 4: message.api.message.v1.CommonMessage.image:type_name -> message.api.message.v1.CommonMessage.Image
+	17, // 5: message.api.message.v1.CommonMessage.emoji:type_name -> message.api.message.v1.CommonMessage.Emoji
+	13, // 6: message.api.message.v1.ListSingleMessageResponse.MessageStruct.singleMessage:type_name -> message.api.message.v1.ListSingleMessageResponse.MessageStruct.SingleMessage
+	10, // 7: message.api.message.v1.ListSingleMessageResponse.MessageStruct.SingleMessage.message:type_name -> message.api.message.v1.CommonMessage
+	0,  // 8: message.api.message.v1.Message.CreateMessage:input_type -> message.api.message.v1.CreateMessageRequest
+	2,  // 9: message.api.message.v1.Message.SelectFriendRequest:input_type -> message.api.message.v1.SelectFriendRequestRequest
+	4,  // 10: message.api.message.v1.Message.ListFriendRequest:input_type -> message.api.message.v1.ListFriendRequestRequest
+	8,  // 11: message.api.message.v1.Message.ListUnAckSingleMessage:input_type -> message.api.message.v1.ListUnAckSingleMessageRequest
+	6,  // 12: message.api.message.v1.Message.ListSingleMessage:input_type -> message.api.message.v1.ListSingleMessageRequest
+	1,  // 13: message.api.message.v1.Message.CreateMessage:output_type -> message.api.message.v1.CreateMessageReply
+	3,  // 14: message.api.message.v1.Message.SelectFriendRequest:output_type -> message.api.message.v1.SelectFriendRequestReply
+	5,  // 15: message.api.message.v1.Message.ListFriendRequest:output_type -> message.api.message.v1.ListFriendRequestReply
+	9,  // 16: message.api.message.v1.Message.ListUnAckSingleMessage:output_type -> message.api.message.v1.ListUnAckSingleMessageResponse
+	7,  // 17: message.api.message.v1.Message.ListSingleMessage:output_type -> message.api.message.v1.ListSingleMessageResponse
+	13, // [13:18] is the sub-list for method output_type
+	8,  // [8:13] is the sub-list for method input_type
+	8,  // [8:8] is the sub-list for extension type_name
+	8,  // [8:8] is the sub-list for extension extendee
+	0,  // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_internal_api_message_message_v1_message_proto_init() }
@@ -587,6 +1328,66 @@ func file_internal_api_message_message_v1_message_proto_init() {
 			}
 		}
 		file_internal_api_message_message_v1_message_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ListSingleMessageRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_internal_api_message_message_v1_message_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ListSingleMessageResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_internal_api_message_message_v1_message_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ListUnAckSingleMessageRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_internal_api_message_message_v1_message_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ListUnAckSingleMessageResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_internal_api_message_message_v1_message_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*CommonMessage); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_internal_api_message_message_v1_message_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ListFriendRequestReply_AddFriendMessage); i {
 			case 0:
 				return &v.state
@@ -598,6 +1399,83 @@ func file_internal_api_message_message_v1_message_proto_init() {
 				return nil
 			}
 		}
+		file_internal_api_message_message_v1_message_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ListSingleMessageResponse_MessageStruct); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_internal_api_message_message_v1_message_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ListSingleMessageResponse_MessageStruct_SingleMessage); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_internal_api_message_message_v1_message_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ListUnAckSingleMessageResponse_UnackSingleMessage); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_internal_api_message_message_v1_message_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*CommonMessage_Plain); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_internal_api_message_message_v1_message_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*CommonMessage_Image); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_internal_api_message_message_v1_message_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*CommonMessage_Emoji); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+	}
+	file_internal_api_message_message_v1_message_proto_msgTypes[10].OneofWrappers = []interface{}{
+		(*CommonMessage_Plain_)(nil),
+		(*CommonMessage_Image_)(nil),
+		(*CommonMessage_Emoji_)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -605,7 +1483,7 @@ func file_internal_api_message_message_v1_message_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_internal_api_message_message_v1_message_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   7,
+			NumMessages:   18,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

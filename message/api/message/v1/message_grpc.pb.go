@@ -25,6 +25,8 @@ type MessageClient interface {
 	CreateMessage(ctx context.Context, in *CreateMessageRequest, opts ...grpc.CallOption) (*CreateMessageReply, error)
 	SelectFriendRequest(ctx context.Context, in *SelectFriendRequestRequest, opts ...grpc.CallOption) (*SelectFriendRequestReply, error)
 	ListFriendRequest(ctx context.Context, in *ListFriendRequestRequest, opts ...grpc.CallOption) (*ListFriendRequestReply, error)
+	ListUnAckSingleMessage(ctx context.Context, in *ListUnAckSingleMessageRequest, opts ...grpc.CallOption) (*ListUnAckSingleMessageResponse, error)
+	ListSingleMessage(ctx context.Context, in *ListSingleMessageRequest, opts ...grpc.CallOption) (*ListSingleMessageResponse, error)
 }
 
 type messageClient struct {
@@ -62,6 +64,24 @@ func (c *messageClient) ListFriendRequest(ctx context.Context, in *ListFriendReq
 	return out, nil
 }
 
+func (c *messageClient) ListUnAckSingleMessage(ctx context.Context, in *ListUnAckSingleMessageRequest, opts ...grpc.CallOption) (*ListUnAckSingleMessageResponse, error) {
+	out := new(ListUnAckSingleMessageResponse)
+	err := c.cc.Invoke(ctx, "/message.api.message.v1.Message/ListUnAckSingleMessage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *messageClient) ListSingleMessage(ctx context.Context, in *ListSingleMessageRequest, opts ...grpc.CallOption) (*ListSingleMessageResponse, error) {
+	out := new(ListSingleMessageResponse)
+	err := c.cc.Invoke(ctx, "/message.api.message.v1.Message/ListSingleMessage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MessageServer is the server API for Message service.
 // All implementations must embed UnimplementedMessageServer
 // for forward compatibility
@@ -69,6 +89,8 @@ type MessageServer interface {
 	CreateMessage(context.Context, *CreateMessageRequest) (*CreateMessageReply, error)
 	SelectFriendRequest(context.Context, *SelectFriendRequestRequest) (*SelectFriendRequestReply, error)
 	ListFriendRequest(context.Context, *ListFriendRequestRequest) (*ListFriendRequestReply, error)
+	ListUnAckSingleMessage(context.Context, *ListUnAckSingleMessageRequest) (*ListUnAckSingleMessageResponse, error)
+	ListSingleMessage(context.Context, *ListSingleMessageRequest) (*ListSingleMessageResponse, error)
 	mustEmbedUnimplementedMessageServer()
 }
 
@@ -84,6 +106,12 @@ func (UnimplementedMessageServer) SelectFriendRequest(context.Context, *SelectFr
 }
 func (UnimplementedMessageServer) ListFriendRequest(context.Context, *ListFriendRequestRequest) (*ListFriendRequestReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListFriendRequest not implemented")
+}
+func (UnimplementedMessageServer) ListUnAckSingleMessage(context.Context, *ListUnAckSingleMessageRequest) (*ListUnAckSingleMessageResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListUnAckSingleMessage not implemented")
+}
+func (UnimplementedMessageServer) ListSingleMessage(context.Context, *ListSingleMessageRequest) (*ListSingleMessageResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListSingleMessage not implemented")
 }
 func (UnimplementedMessageServer) mustEmbedUnimplementedMessageServer() {}
 
@@ -152,6 +180,42 @@ func _Message_ListFriendRequest_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Message_ListUnAckSingleMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListUnAckSingleMessageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MessageServer).ListUnAckSingleMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/message.api.message.v1.Message/ListUnAckSingleMessage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MessageServer).ListUnAckSingleMessage(ctx, req.(*ListUnAckSingleMessageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Message_ListSingleMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListSingleMessageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MessageServer).ListSingleMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/message.api.message.v1.Message/ListSingleMessage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MessageServer).ListSingleMessage(ctx, req.(*ListSingleMessageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Message_ServiceDesc is the grpc.ServiceDesc for Message service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -170,6 +234,14 @@ var Message_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListFriendRequest",
 			Handler:    _Message_ListFriendRequest_Handler,
+		},
+		{
+			MethodName: "ListUnAckSingleMessage",
+			Handler:    _Message_ListUnAckSingleMessage_Handler,
+		},
+		{
+			MethodName: "ListSingleMessage",
+			Handler:    _Message_ListSingleMessage_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
