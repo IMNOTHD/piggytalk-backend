@@ -358,11 +358,12 @@ func (r *messageRepo) SingleMessage(ctx context.Context, body []byte, mid string
 		false,
 		false,
 		amqp.Publishing{
-			ContentType:   "text/plain",
-			Body:          body,
-			Type:          _singleTalk,
-			MessageId:     mid,
-			CorrelationId: x.Talk,
+			ContentType: "text/plain",
+			Body:        body,
+			Type:        _singleTalk,
+			MessageId:   mid,
+			// todo 处理infoJson
+			CorrelationId: infoJson,
 		},
 	)
 	if err != nil {
